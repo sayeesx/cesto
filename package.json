@@ -1,0 +1,13 @@
+{
+    "name": "cesto",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {},
+    "devDependencies": {
+        "turbo": "^2.0.0"
+    }
+}

@@ -1,0 +1,16 @@
+src/common/guards/auth.guard.ts(26,7): error TS7053: Element implicitly has an 'any' type because expression of type '"user"' can't be used to index type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+  Property 'user' does not exist on type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+src/modules/cart/cart.service.ts(13,7): error TS2322: Type '{ userId: string; session?: undefined; } | { session: string | undefined; userId?: undefined; }' is not assignable to type 'CartWhereUniqueInput'.
+  Type '{ userId: string; session?: undefined; }' is not assignable to type 'CartWhereUniqueInput'.
+    Type '{ userId: string; session?: undefined; }' is not assignable to type '{ id: string; session: string; } & { id?: string | undefined; session?: string | undefined; AND?: CartWhereInput | CartWhereInput[] | undefined; OR?: CartWhereInput[] | undefined; ... 4 more ...; items?: CartItemListRelationFilter | undefined; }'.
+      Property 'id' is missing in type '{ userId: string; session?: undefined; }' but required in type '{ id: string; session: string; }'.
+src/modules/cart/cart.service.ts(16,22): error TS2353: Object literal may only specify known properties, and 'product' does not exist in type 'CartItemInclude<DefaultArgs>'.
+src/modules/cart/cart.service.ts(24,40): error TS2353: Object literal may only specify known properties, and 'product' does not exist in type 'CartItemInclude<DefaultArgs>'.
+src/modules/orders/orders.service.ts(24,38): error TS2353: Object literal may only specify known properties, and 'product' does not exist in type 'CartItemInclude<DefaultArgs>'.
+src/modules/orders/orders.service.ts(27,23): error TS2339: Property 'items' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; session: string | null; userId: string | null; }'.
+src/modules/orders/orders.service.ts(32,11): error TS7034: Variable 'orderItemsData' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/modules/orders/orders.service.ts(35,29): error TS2339: Property 'items' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; session: string | null; userId: string | null; }'.
+src/modules/orders/orders.service.ts(75,21): error TS7005: Variable 'orderItemsData' implicitly has an 'any[]' type.
+src/modules/orders/orders.service.ts(81,26): error TS7005: Variable 'orderItemsData' implicitly has an 'any[]' type.
+src/modules/uploads/uploads.service.ts(2,62): error TS2307: Cannot find module '@aws-sdk/client-s3' or its corresponding type declarations.
+src/modules/uploads/uploads.service.ts(3,30): error TS2307: Cannot find module '@aws-sdk/s3-request-presigner' or its corresponding type declarations.

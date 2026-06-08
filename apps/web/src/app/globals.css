@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background-main: #FFFFFF;
+  --color-primary: #b22153;
+}
+
+@layer base {
+  body {
+    @apply antialiased;
+    background: #FFFFFF;
+  }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes promoLoop {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.promo-strip {
+  background: #111111;
+  color: #FFFFFF;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.promo-strip__track {
+  display: flex;
+  animation: promoLoop 20s linear infinite;
+}
+
+.promo-strip__item {
+  padding: 0 40px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Utils */
+.btn {
+  @apply inline-flex items-center justify-center font-bold transition-all duration-250 cursor-pointer;
+}
+
+.btn-primary {
+  @apply bg-[#b22153] text-white;
+}
+
+@media (max-width: 768px) {
+  .mobile-footer-compact {
+    padding: 30px 0 80px !important;
+  }
+  .promo-strip__track {
+    animation-duration: 16s;
+  }
+}

@@ -71,7 +71,7 @@
 
 /* Utils */
 .btn {
-  @apply inline-flex items-center justify-center font-bold transition-all duration-250 cursor-pointer;
+  @apply inline-flex items-center justify-center font-bold transition-all duration-300 cursor-pointer;
 }
 
 .btn-primary {

@@ -52,6 +52,8 @@ export const viewport: Viewport = {
   viewportFit: "cover", 
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+
 export default function RootLayout({
   children,
 }: {
@@ -65,10 +67,12 @@ export default function RootLayout({
         display: 'flex',
         flexDirection: 'column'
       }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {children}
-        </div>
-        <BottomNav />
+        <AuthProvider>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            {children}
+          </div>
+          <BottomNav />
+        </AuthProvider>
       </body>
     </html>
   );

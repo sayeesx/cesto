@@ -47,6 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = __importStar(require("bcrypt"));
+const crypto = __importStar(require("crypto"));
 let AuthService = class AuthService {
     prisma;
     jwtService;
@@ -55,7 +56,9 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
     }
     async register(dto) {
-        const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+        const existing = await this.prisma.user.findUnique({
+            where: { email: dto.email },
+        });
         if (existing) {
             throw new common_1.ConflictException('Email already registered');
         }
@@ -71,7 +74,9 @@ let AuthService = class AuthService {
         return this.generateTokens(user.id, user.email, user.role);
     }
     async login(dto) {
-        const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+        const user = await this.prisma.user.findUnique({
+            where: { email: dto.email },
+        });
         if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
@@ -80,11 +85,85 @@ let AuthService = class AuthService {
         }
         return this.generateTokens(user.id, user.email, user.role);
     }
+    async getProfile(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, email: true, name: true, phone: true, role: true, isActive: true, createdAt: true },
+        });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        return user;
+    }
+    async logout(userId, refreshToken) {
+        const hashedToken = this.hashToken(refreshToken);
+        await this.prisma.refreshToken.updateMany({
+            where: {
+                userId,
+                token: hashedToken,
+                revokedAt: null,
+            },
+            data: {
+                revokedAt: new Date(),
+            },
+        });
+    }
+    async refreshTokens(userId, refreshToken) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user || !user.isActive) {
+            throw new common_1.ForbiddenException('Access Denied');
+        }
+        const hashedToken = this.hashToken(refreshToken);
+        const savedToken = await this.prisma.refreshToken.findFirst({
+            where: {
+                token: hashedToken,
+                userId,
+                revokedAt: null,
+                expiresAt: { gt: new Date() },
+            },
+        });
+        if (!savedToken) {
+            throw new common_1.ForbiddenException('Invalid Refresh Token');
+        }
+        await this.prisma.refreshToken.update({
+            where: { id: savedToken.id },
+            data: { revokedAt: new Date() },
+        });
+        return this.generateTokens(user.id, user.email, user.role);
+    }
     async generateTokens(userId, email, role) {
-        const payload = { sub: userId, email, role };
+        const payload = { sub: userId, email, role, jti: crypto.randomUUID() };
+        const [at, rt] = await Promise.all([
+            this.jwtService.signAsync(payload, {
+                secret: process.env.JWT_SECRET,
+                expiresIn: '15m',
+            }),
+            this.jwtService.signAsync(payload, {
+                secret: process.env.REFRESH_TOKEN_SECRET,
+                expiresIn: '7d',
+            }),
+        ]);
+        await this.saveRefreshToken(userId, rt);
         return {
-            access_token: await this.jwtService.signAsync(payload),
+            access_token: at,
+            refresh_token: rt,
         };
+    }
+    async saveRefreshToken(userId, refreshToken) {
+        const hashedToken = this.hashToken(refreshToken);
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+        await this.prisma.refreshToken.create({
+            data: {
+                token: hashedToken,
+                userId,
+                expiresAt,
+            },
+        });
+    }
+    hashToken(token) {
+        return crypto.createHash('sha256').update(token).digest('hex');
     }
 };
 exports.AuthService = AuthService;

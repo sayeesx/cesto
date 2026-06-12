@@ -5,8 +5,9 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: "ts-node prisma/seed.ts",
   },
   datasource: {
-    url: "postgresql://postgres:password@127.0.0.1:5433/cesto?schema=public",
+    url: process.env.DATABASE_URL,
   },
 });

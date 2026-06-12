@@ -38,6 +38,8 @@ const messageOptions = [
   'Congratulations! 🎉',
 ];
 
+import { apiClient } from '@/lib/api-client';
+
 export default function ProductModal({ product, onClose }: ProductModalProps) {
   const router = useRouter();
   const [qty, setQty] = useState(1);
@@ -88,13 +90,25 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
     }
   };
 
-  const handleAddToBag = () => {
+  const handleAddToBag = async () => {
     setLoadingBtn(true);
-    setTimeout(() => {
-      setLoadingBtn(false);
+    try {
+      // Use product.id (UUID) instead of slug if ID is available
+      const productId = product.id; 
+      await apiClient.addToCart(productId, qty);
       handleClose();
       router.push('/cart');
-    }, 400);
+    } catch (err: any) {
+      console.error('Failed to add to cart', err);
+      // If unauthorized, redirect to login or show alert
+      if (err.statusCode === 401) {
+        router.push('/login');
+      } else {
+        alert(err.message || 'Could not add item to bag.');
+      }
+    } finally {
+      setLoadingBtn(false);
+    }
   };
 
   const handleClose = () => {

@@ -45,13 +45,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const audit_service_1 = require("../audit/audit.service");
+const orders_service_1 = require("../orders/orders.service");
 const crypto = __importStar(require("crypto"));
+const client_1 = require("@prisma/client");
 let PaymentsService = class PaymentsService {
     prisma;
-    constructor(prisma) {
+    audit;
+    ordersService;
+    constructor(prisma, audit, ordersService) {
         this.prisma = prisma;
+        this.audit = audit;
+        this.ordersService = ordersService;
     }
-    async createRazorpayOrder(orderId) {
+    async createRazorpayOrder(orderId, userId) {
         const order = await this.prisma.order.findUnique({ where: { id: orderId } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
@@ -61,80 +68,137 @@ let PaymentsService = class PaymentsService {
                 orderId: order.id,
                 razorpayOrderId: mockRazorpayOrderId,
                 amount: order.finalAmount,
-                status: 'PENDING',
+                status: client_1.PaymentStatus.PENDING,
             },
+        });
+        await this.audit.log({
+            userId,
+            action: 'PAYMENT_ORDER_CREATE',
+            entityType: 'Payment',
+            entityId: payment.id,
+            newValue: { razorpayOrderId: mockRazorpayOrderId },
         });
         return {
             razorpayOrderId: payment.razorpayOrderId,
             amount: payment.amount,
             currency: 'INR',
             orderId: order.id,
-            orderNumber: order.orderNumber,
         };
     }
-    async verifyPayment(dto) {
+    async verifyPayment(dto, userId) {
         const secret = process.env.RAZORPAY_KEY_SECRET;
         if (!secret)
-            throw new common_1.BadRequestException('Payment config missing');
+            throw new common_1.BadRequestException('RAZORPAY_KEY_SECRET not configured');
         const body = dto.razorpayOrderId + '|' + dto.razorpayPaymentId;
         const expectedSignature = crypto
             .createHmac('sha256', secret)
             .update(body)
             .digest('hex');
         if (expectedSignature !== dto.razorpaySignature) {
-            throw new common_1.BadRequestException('Invalid payment signature');
+            throw new common_1.BadRequestException('Invalid signature');
         }
-        const payment = await this.prisma.payment.update({
-            where: { razorpayOrderId: dto.razorpayOrderId },
-            data: {
-                razorpayPaymentId: dto.razorpayPaymentId,
-                status: 'SUCCESS',
-            },
-        });
-        await this.prisma.order.update({
-            where: { id: payment.orderId },
-            data: { status: 'PAYMENT_CONFIRMED' },
-        });
-        return { verified: true, orderId: payment.orderId };
+        return this.processSuccessfulPayment(dto.razorpayOrderId, dto.razorpayPaymentId, 'manual_verification', userId);
     }
-    async handleWebhook(body, signature) {
+    async handleWebhook(rawBody, signature, eventId) {
         const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
         if (!webhookSecret)
-            throw new common_1.BadRequestException('Webhook secret not configured');
+            throw new common_1.BadRequestException('RAZORPAY_WEBHOOK_SECRET not configured');
         const expectedSignature = crypto
             .createHmac('sha256', webhookSecret)
-            .update(JSON.stringify(body))
+            .update(rawBody)
             .digest('hex');
         if (expectedSignature !== signature) {
             throw new common_1.BadRequestException('Invalid webhook signature');
         }
-        const event = body.event;
-        const paymentEntity = body.payload?.payment?.entity;
-        if (event === 'payment.captured' && paymentEntity) {
-            await this.prisma.payment.updateMany({
-                where: { razorpayOrderId: paymentEntity.order_id },
+        const payload = JSON.parse(rawBody);
+        const eventType = payload.event;
+        const existingEvent = await this.prisma.paymentWebhookEvent.findUnique({
+            where: { razorpayEventId: eventId },
+        });
+        if (existingEvent && existingEvent.processed) {
+            return { status: 'already_processed' };
+        }
+        const webhookEvent = await this.prisma.paymentWebhookEvent.upsert({
+            where: { razorpayEventId: eventId },
+            update: {},
+            create: {
+                razorpayEventId: eventId,
+                eventType,
+                payload,
+            },
+        });
+        try {
+            if (eventType === 'payment.captured') {
+                const paymentData = payload.payload.payment.entity;
+                await this.processSuccessfulPayment(paymentData.order_id, paymentData.id, 'webhook', 'SYSTEM');
+            }
+            await this.prisma.paymentWebhookEvent.update({
+                where: { id: webhookEvent.id },
+                data: { processed: true },
+            });
+        }
+        catch (error) {
+            await this.prisma.paymentWebhookEvent.update({
+                where: { id: webhookEvent.id },
+                data: { error: error.message },
+            });
+            console.error('Webhook processing failed:', error);
+        }
+        return { status: 'ok' };
+    }
+    async processSuccessfulPayment(rpOrderId, rpPaymentId, source, userId) {
+        const payment = await this.prisma.payment.findUnique({
+            where: { razorpayOrderId: rpOrderId },
+            include: { order: true }
+        });
+        if (!payment)
+            throw new common_1.NotFoundException('Payment record not found');
+        if (payment.status === client_1.PaymentStatus.SUCCESS)
+            return { status: 'already_paid', orderId: payment.orderId };
+        const result = await this.prisma.$transaction(async (tx) => {
+            const updatedPayment = await tx.payment.update({
+                where: { id: payment.id },
                 data: {
-                    razorpayPaymentId: paymentEntity.id,
-                    status: 'SUCCESS',
-                    method: paymentEntity.method,
+                    status: client_1.PaymentStatus.SUCCESS,
+                    razorpayPaymentId: rpPaymentId,
+                    method: source,
                 },
             });
-            const payment = await this.prisma.payment.findFirst({
-                where: { razorpayOrderId: paymentEntity.order_id },
+            await tx.order.update({
+                where: { id: payment.orderId },
+                data: { status: client_1.OrderStatus.PAYMENT_CONFIRMED },
             });
-            if (payment) {
-                await this.prisma.order.update({
-                    where: { id: payment.orderId },
-                    data: { status: 'PAYMENT_CONFIRMED' },
+            await tx.orderStatusHistory.create({
+                data: {
+                    orderId: payment.orderId,
+                    status: client_1.OrderStatus.PAYMENT_CONFIRMED,
+                    notes: `Payment confirmed via ${source}. Razorpay ID: ${rpPaymentId}`,
+                },
+            });
+            const orderItems = await tx.orderItem.findMany({ where: { orderId: payment.orderId } });
+            for (const item of orderItems) {
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: { reservedStock: { decrement: item.quantity } }
                 });
             }
-        }
-        return { received: true };
+            return updatedPayment;
+        });
+        await this.audit.log({
+            userId,
+            action: 'PAYMENT_SUCCESS',
+            entityType: 'Order',
+            entityId: payment.orderId,
+            newValue: { source, rpPaymentId },
+        });
+        return { status: 'success', orderId: payment.orderId };
     }
 };
 exports.PaymentsService = PaymentsService;
 exports.PaymentsService = PaymentsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        audit_service_1.AuditService,
+        orders_service_1.OrdersService])
 ], PaymentsService);
 //# sourceMappingURL=payments.service.js.map

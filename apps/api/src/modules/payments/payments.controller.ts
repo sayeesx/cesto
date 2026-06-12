@@ -1,4 +1,4 @@
-import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Headers, Req, UseGuards, BadRequestException } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
 
@@ -8,28 +8,33 @@ export class PaymentsController {
 
   @UseGuards(AuthGuard)
   @Post('create-order')
-  createRazorpayOrder(@Body() dto: { orderId: string }) {
-    return this.paymentsService.createRazorpayOrder(dto.orderId);
+  createOrder(@Req() req: any, @Body('orderId') orderId: string) {
+    return this.paymentsService.createRazorpayOrder(orderId, req.user.sub);
   }
 
   @UseGuards(AuthGuard)
   @Post('verify')
-  verifyPayment(
-    @Body()
-    dto: {
+  verify(
+    @Req() req: any,
+    @Body() dto: {
       razorpayOrderId: string;
       razorpayPaymentId: string;
       razorpaySignature: string;
     },
   ) {
-    return this.paymentsService.verifyPayment(dto);
+    return this.paymentsService.verifyPayment(dto, req.user.sub);
   }
 
   @Post('webhook')
-  handleWebhook(
-    @Body() body: any,
+  async webhook(
+    @Req() req: any,
     @Headers('x-razorpay-signature') signature: string,
+    @Headers('x-razorpay-event-id') eventId: string,
   ) {
-    return this.paymentsService.handleWebhook(body, signature);
+    if (!signature || !eventId) {
+      throw new BadRequestException('Missing headers');
+    }
+    const rawBody = JSON.stringify(req.body);
+    return this.paymentsService.handleWebhook(rawBody, signature, eventId);
   }
 }

@@ -8,6 +8,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -21,6 +22,7 @@ import { HealthController } from './health.controller';
     PaymentsModule,
     UploadsModule,
     AdminModule,
+    AuditModule,
   ],
   controllers: [HealthController],
 })

@@ -19,7 +19,7 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             jwt_1.JwtModule.register({
                 global: true,
-                secret: process.env.JWT_SECRET || 'testing_secret',
+                secret: process.env.JWT_SECRET,
                 signOptions: { expiresIn: '1d' },
             }),
         ],

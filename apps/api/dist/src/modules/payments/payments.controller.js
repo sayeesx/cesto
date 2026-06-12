@@ -21,41 +21,48 @@ let PaymentsController = class PaymentsController {
     constructor(paymentsService) {
         this.paymentsService = paymentsService;
     }
-    createRazorpayOrder(dto) {
-        return this.paymentsService.createRazorpayOrder(dto.orderId);
+    createOrder(req, orderId) {
+        return this.paymentsService.createRazorpayOrder(orderId, req.user.sub);
     }
-    verifyPayment(dto) {
-        return this.paymentsService.verifyPayment(dto);
+    verify(req, dto) {
+        return this.paymentsService.verifyPayment(dto, req.user.sub);
     }
-    handleWebhook(body, signature) {
-        return this.paymentsService.handleWebhook(body, signature);
+    async webhook(req, signature, eventId) {
+        if (!signature || !eventId) {
+            throw new common_1.BadRequestException('Missing headers');
+        }
+        const rawBody = JSON.stringify(req.body);
+        return this.paymentsService.handleWebhook(rawBody, signature, eventId);
     }
 };
 exports.PaymentsController = PaymentsController;
 __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, common_1.Post)('create-order'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PaymentsController.prototype, "createRazorpayOrder", null);
-__decorate([
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
-    (0, common_1.Post)('verify'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PaymentsController.prototype, "verifyPayment", null);
-__decorate([
-    (0, common_1.Post)('webhook'),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Headers)('x-razorpay-signature')),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)('orderId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
-], PaymentsController.prototype, "handleWebhook", null);
+], PaymentsController.prototype, "createOrder", null);
+__decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.Post)('verify'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], PaymentsController.prototype, "verify", null);
+__decorate([
+    (0, common_1.Post)('webhook'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Headers)('x-razorpay-signature')),
+    __param(2, (0, common_1.Headers)('x-razorpay-event-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", Promise)
+], PaymentsController.prototype, "webhook", null);
 exports.PaymentsController = PaymentsController = __decorate([
     (0, common_1.Controller)('v1/payments'),
     __metadata("design:paramtypes", [payments_service_1.PaymentsService])

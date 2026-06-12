@@ -47,12 +47,17 @@ const common_1 = require("@nestjs/common");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
 const crypto = __importStar(require("crypto"));
+const audit_service_1 = require("../audit/audit.service");
 let UploadsService = class UploadsService {
+    audit;
     s3Client = null;
-    constructor() {
+    bucket;
+    constructor(audit) {
+        this.audit = audit;
         const accountId = process.env.R2_ACCOUNT_ID;
         const accessKeyId = process.env.R2_ACCESS_KEY_ID;
         const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+        this.bucket = process.env.R2_BUCKET_NAME || '';
         if (accountId && accessKeyId && secretAccessKey) {
             this.s3Client = new client_s3_1.S3Client({
                 region: 'auto',
@@ -64,36 +69,71 @@ let UploadsService = class UploadsService {
             });
         }
     }
-    async getPresignedUploadUrl(folder, contentType) {
+    async getPresignedUploadUrl(folder, contentType, userId) {
         if (!this.s3Client) {
-            throw new common_1.BadRequestException('R2 storage not configured');
+            throw new common_1.BadRequestException('Storage service not configured');
         }
-        const bucket = process.env.R2_BUCKET_NAME;
-        if (!bucket)
-            throw new common_1.BadRequestException('R2 bucket not configured');
+        if (!this.bucket) {
+            throw new common_1.BadRequestException('Bucket not configured');
+        }
         const fileExtension = contentType.split('/')[1] || 'bin';
         const key = `${folder}/${crypto.randomUUID()}.${fileExtension}`;
         const command = new client_s3_1.PutObjectCommand({
-            Bucket: bucket,
+            Bucket: this.bucket,
             Key: key,
             ContentType: contentType,
         });
-        const presignedUrl = await (0, s3_request_presigner_1.getSignedUrl)(this.s3Client, command, {
-            expiresIn: 600,
+        try {
+            const presignedUrl = await (0, s3_request_presigner_1.getSignedUrl)(this.s3Client, command, {
+                expiresIn: 600,
+            });
+            const publicUrl = process.env.R2_PUBLIC_URL
+                ? `${process.env.R2_PUBLIC_URL}/${key}`
+                : key;
+            await this.audit.log({
+                userId,
+                action: 'UPLOADS_URL_GENERATE',
+                entityType: 'Upload',
+                entityId: key,
+                newValue: { folder, contentType, publicUrl },
+            });
+            return {
+                uploadUrl: presignedUrl,
+                publicUrl,
+                key,
+            };
+        }
+        catch (error) {
+            console.error('R2 Presign Error:', error);
+            throw new common_1.InternalServerErrorException('Could not generate upload URL');
+        }
+    }
+    async deleteFile(key, userId) {
+        if (!this.s3Client)
+            throw new common_1.BadRequestException('Storage service not configured');
+        const command = new client_s3_1.DeleteObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
         });
-        const publicUrl = process.env.R2_PUBLIC_URL
-            ? `${process.env.R2_PUBLIC_URL}/${key}`
-            : key;
-        return {
-            uploadUrl: presignedUrl,
-            publicUrl,
-            key,
-        };
+        try {
+            await this.s3Client.send(command);
+            await this.audit.log({
+                userId,
+                action: 'UPLOADS_FILE_DELETE',
+                entityType: 'Upload',
+                entityId: key,
+            });
+            return { success: true };
+        }
+        catch (error) {
+            console.error('R2 Delete Error:', error);
+            throw new common_1.InternalServerErrorException('Could not delete file');
+        }
     }
 };
 exports.UploadsService = UploadsService;
 exports.UploadsService = UploadsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    __metadata("design:paramtypes", [audit_service_1.AuditService])
 ], UploadsService);
 //# sourceMappingURL=uploads.service.js.map

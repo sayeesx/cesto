@@ -26,7 +26,7 @@ let HealthController = class HealthController {
             return { status: 'ok', db: 'connected' };
         }
         catch (error) {
-            return { status: 'error', db: 'disconnected' };
+            return { status: 'error', db: 'disconnected', message: error.message?.substring(0, 200) };
         }
     }
     healthRedis() {

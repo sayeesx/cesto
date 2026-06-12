@@ -1,0 +1,129 @@
+﻿=================================
+ CESTO BACKEND VERIFICATION SUITE
+=================================
+
+
+Γû╢ Running verify_env...
+Γùç injected env (4) from .env // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+--- Environment Validation ---
+[PASS] DATABASE_URL exists.
+[PASS] JWT_SECRET exists.
+[PASS] REFRESH_TOKEN_SECRET exists.
+
+--- Payment Integrations ---
+[SKIPPED] RAZORPAY_KEY_ID missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_KEY_SECRET missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET missing. Razorpay Webhook tests will be skipped.
+
+--- Storage Integrations ---
+[SKIPPED] R2_ACCOUNT_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_ACCESS_KEY_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_SECRET_ACCESS_KEY missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_BUCKET_NAME missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_PUBLIC_URL missing. Cloudflare R2 tests will be skipped.
+
+Γ£à Core Environment Validation Passed.
+
+
+Γû╢ Running verify_db...
+Γùç injected env (4) from .env // tip: Γùê secrets for agents [www.dotenvx.com]
+--- Database Connectivity Verification ---
+[PASS] Connected to DB successfully.
+Users: 12
+Products: 53
+Categories: 12
+Orders: 0
+[PASS] Admin user verified.
+[PASS] At least 30 products verified.
+
+Γ£à Database Connectivity & State Passed.
+
+
+Γû╢ Running test_health...
+--- Health Endpoints Verification ---
+[PASS] /health responded: {"status":"ok","timestamp":"2026-06-12T04:16:37.827Z"}
+[PASS] /health/db responded: {"status":"ok","db":"connected"}
+[PASS] /health/redis responded: {"status":"ok","redis":"not_configured"}
+
+Γ£à Health Tests Passed.
+
+
+Γû╢ Running test_auth_flow...
+--- Auth Flow E2E Test ---
+[PASS] Customer registered
+[PASS] Customer logged in
+[PASS] Get current user
+[PASS] Token refreshed successfully with rotation.
+[PASS] Reusing old refresh token denied.
+[PASS] User logged out explicitly.
+[PASS] Access using logged out token denied.
+
+Γ£à Auth Flow E2E Passed.
+
+
+Γû╢ Running test_rbac...
+--- RBAC Sandbox Test ---
+[PASS] CUSTOMER blocked from admin dashboard.
+[PASS] CUSTOMER blocked from admin mutations.
+[PASS] CUSTOMER blocked from admin audit logs.
+[SKIPPED] Admin tests skipped ΓÇö could not login as admin.
+[PASS] Invalid token returns 401.
+
+Γ£à RBAC Verification Passed.
+
+
+Γû╢ Running test_catalog...
+--- Catalog E2E Test ---
+[PASS] List products endpoint reachable.
+[PASS] Category/budget filters endpoint pattern reachable.
+
+Γ£à Catalog Endpoint Matrix verified.
+
+
+Γû╢ Running test_checkout_flow...
+--- Checkout Flow E2E Test ---
+[PASS] Test user registered and logged in.
+[PASS] Using product: FatherΓÇÖs Day Grooming Kit (00dae041-412b-4d26-80ab-bf9b7587f20f)
+[PASS] Order endpoint validates cart properly (400).
+
+Γ£à Checkout Flow E2E Passed.
+
+
+Γû╢ Running test_overselling...
+Γùç injected env (4) from .env // tip: Γîÿ enable debugging { debug: true }
+--- Starting Concurrent Checkout / Overselling Test ---
+[Setup] Created Product b20519d4-87a5-4191-adda-2748829f9ec5 with Stock = 1
+[Setup] Created Cart1=5a629203-7618-402e-afea-e17fa999c1c9, Cart2=e03839af-6c94-4670-83ee-0432de9c0815
+[Test] Triggering two simultaneous checkouts for the same 1-stock product...
+[Result] Successes: 1, Failures: 1
+  Γ£à Request 1 Succeeded. Order: CESTO-1781237826789-398
+  Γ¥î Request 2 Failed: Stock changed for Test Limited Product. Please try again.
+[Verification] Final Stock: 0
+[Verification] Final Reserved Stock: 1
+≡ƒÄë RESULT: SUCCESS! Exactly one order succeeded, overselling prevented.
+[Cleanup] Test data removed.
+
+
+Γû╢ Running test_razorpay_signature...
+--- Razorpay Signature Check ---
+[SKIPPED] RAZORPAY_KEY_SECRET missing.
+
+
+Γû╢ Running test_razorpay_webhook_idempotency...
+--- Razorpay Webhook Idempotency & Signature ---
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET is missing. Skipping tests.
+
+
+Γû╢ Running test_r2_upload...
+--- R2 Storage Presigned Upload E2E ---
+[SKIPPED] Cloudflare R2 secrets are missing.
+
+
+=================================
+   BACKEND VERIFICATION REPORT
+=================================
+- Passed: 6
+- Skipped: 5
+- Failed: 0
+
+Safe to proceed to frontend: YES

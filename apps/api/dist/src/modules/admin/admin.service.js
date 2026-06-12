@@ -67,9 +67,9 @@ let AdminService = class AdminService {
             data: {
                 userId,
                 action: 'UPDATE_ORDER_STATUS',
-                entity: 'Order',
+                entityType: 'Order',
                 entityId: orderId,
-                details: { newStatus: status },
+                newValue: { newStatus: status },
             },
         });
         return order;

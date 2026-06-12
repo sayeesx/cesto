@@ -10,10 +10,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const pool = new Pool({ connectionString });
     const adapter = new PrismaPg(pool);
 
+    const logLevels: any[] = ['error', 'warn'];
+    if (process.env.NODE_ENV === 'development') logLevels.push('query');
+
     super({
       adapter,
-      // You can add log levels here if needed for debugging
-      // log: ['query', 'info', 'warn', 'error'],
+      log: logLevels,
     });
   }
 

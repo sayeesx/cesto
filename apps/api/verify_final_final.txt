@@ -1,0 +1,127 @@
+﻿=================================
+ CESTO BACKEND VERIFICATION SUITE
+=================================
+
+
+Γû╢ Running verify_env...
+Γùç injected env (4) from .env // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+--- Environment Validation ---
+[PASS] DATABASE_URL exists.
+[PASS] JWT_SECRET exists.
+[PASS] REFRESH_TOKEN_SECRET exists.
+
+--- Payment Integrations ---
+[SKIPPED] RAZORPAY_KEY_ID missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_KEY_SECRET missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET missing. Razorpay Webhook tests will be skipped.
+
+--- Storage Integrations ---
+[SKIPPED] R2_ACCOUNT_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_ACCESS_KEY_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_SECRET_ACCESS_KEY missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_BUCKET_NAME missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_PUBLIC_URL missing. Cloudflare R2 tests will be skipped.
+
+Γ£à Core Environment Validation Passed.
+
+
+Γû╢ Running verify_db...
+Γùç injected env (4) from .env // tip: Γîÿ suppress logs { quiet: true }
+--- Database Connectivity Verification ---
+[PASS] Connected to DB successfully.
+Users: 1
+Products: 52
+Categories: 12
+Orders: 0
+[PASS] Admin user verified.
+[PASS] At least 30 products verified.
+
+Γ£à Database Connectivity & State Passed.
+
+
+Γû╢ Running test_health...
+--- Health Endpoints Verification ---
+[PASS] /health responded: {"status":"ok","timestamp":"2026-06-10T15:47:36.732Z"}
+[PASS] /health/redis responded: {"status":"ok","redis":"not_configured"}
+
+node.exe : [FAIL] /health/db connected but DB 
+is disconnected. { status: 'error', db: 
+'disconnected' }
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([ 
+   FAIL] /health/...disconnected' }:String) [  
+  ], RemoteException
+    + FullyQualifiedErrorId : NativeCommandErr 
+   or
+ 
+
+Γ¥î test_health FAILED.
+
+Γû╢ Running test_auth_flow...
+--- Auth Flow E2E Test ---
+
+[FAIL] Registration: 500 { statusCode: 500, 
+message: 'Internal server error' }
+
+Γ¥î test_auth_flow FAILED.
+
+Γû╢ Running test_rbac...
+--- RBAC Sandbox Test ---
+
+[FAIL] CUSTOMER accessed admin resource.
+
+Γ¥î test_rbac FAILED.
+
+Γû╢ Running test_catalog...
+--- Catalog E2E Test ---
+
+Γ£à Catalog Endpoint Matrix verified.
+
+
+Γû╢ Running test_checkout_flow...
+--- Checkout Flow E2E Test ---
+
+[FAIL] Could not generate test token. Is the 
+DB running?
+
+Γ¥î test_checkout_flow FAILED.
+
+Γû╢ Running test_overselling...
+Γùç injected env (4) from .env // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+--- Starting Concurrent Checkout / Overselling Test ---
+[Setup] Created Product c9120b59-60dc-421e-9650-c5bb631d7d48 with Stock = 1
+[Test] Triggering two simultaneous checkouts for the same product...
+[Verification] Final Product Stock: 1
+[Verification] Final Product Reserved Stock: 0
+≡ƒÆÇ RESULT: FAILURE! Inventory state is corrupted.
+
+
+Γû╢ Running test_razorpay_signature...
+--- Razorpay Signature Check ---
+[SKIPPED] RAZORPAY_KEY_SECRET missing.
+
+
+Γû╢ Running test_razorpay_webhook_idempotency...
+--- Razorpay Webhook Idempotency & Signature ---
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET is missing. Skipping tests.
+
+
+Γû╢ Running test_r2_upload...
+--- R2 Storage Presigned Upload E2E ---
+[SKIPPED] Cloudflare R2 secrets are missing.
+
+
+=================================
+   BACKEND VERIFICATION REPORT
+=================================
+- Passed: 3
+- Skipped: 4
+- Failed: 4
+
+CRITICAL BLOCKERS DETECTED:
+  - test_auth_flow
+  - test_checkout_flow
+
+Safe to proceed to frontend: NO

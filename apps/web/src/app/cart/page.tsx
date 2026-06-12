@@ -5,16 +5,61 @@ import Link from 'next/link';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import { BsArrowRight, BsBag, BsTrash, BsPlus, BsDash } from 'react-icons/bs';
 import RollingPrice from '@/components/ui/RollingPrice';
+import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
+import { useState, useEffect } from 'react';
+import Loader from '@/components/ui/Loader';
 
 export default function CartPage() {
-  const isEmpty = false; // Set to false to show the refined layout
+  const [cart, setCart] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
-  const cartItems = [
-    { id: '1', name: 'Sunrise Blooms Bouquet', price: 899, quantity: 1, image: '/flowers.webp' },
-    { id: '2', name: 'Premium Chocolate Hamper', price: 1499, quantity: 1, image: '/hampers.webp' },
-  ];
+  const loadCart = async () => {
+    try {
+      const data = await apiClient.getCart();
+      setCart(data);
+    } catch (err) {
+      console.error('Failed to load cart', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const handleUpdateQty = async (itemId: string, newQty: number) => {
+    if (newQty < 1) return;
+    try {
+      await apiClient.updateCartItem(itemId, newQty);
+      loadCart();
+    } catch (err) {
+      console.error('Update qty failed', err);
+    }
+  };
+
+  const handleRemove = async (itemId: string) => {
+    try {
+      await apiClient.removeFromCart(itemId);
+      loadCart();
+    } catch (err) {
+      console.error('Remove item failed', err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60dvh]">
+        <Loader color="#b22153" size={40} />
+      </div>
+    );
+  }
+
+  const cartItems = cart?.items || [];
+  const total = cart?.totalPrice || 0;
+  const isEmpty = cartItems.length === 0;
 
   return (
     <>
@@ -64,19 +109,19 @@ export default function CartPage() {
             
             {/* Cart Items */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-              {cartItems.map((item) => (
+              {cartItems.map((item: any) => (
                 <div key={item.id} style={{ 
                   background: '#FFFFFF', borderRadius: 16, padding: 12,
                   display: 'flex', gap: 12, border: '1px solid #F0F0F0'
                 }}>
                   <div style={{ width: 80, height: 80, borderRadius: 12, background: '#F5F5F5', overflow: 'hidden' }}>
-                    <img src={item.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={item.product?.imageUrl || '/placeholder.png'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h3 style={{ fontSize: 13, fontWeight: 800, color: '#111111', maxWidth: '80%' }}>{item.name}</h3>
-                        <button style={{ color: '#BEB4C4' }}><BsTrash size={14} /></button>
+                        <h3 style={{ fontSize: 13, fontWeight: 800, color: '#111111', maxWidth: '80%' }}>{item.product?.name}</h3>
+                        <button onClick={() => handleRemove(item.id)} style={{ color: '#BEB4C4' }}><BsTrash size={14} /></button>
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 900, color: '#111111', marginTop: 4 }}>₹{item.price}</div>
                     </div>
@@ -86,9 +131,9 @@ export default function CartPage() {
                         display: 'flex', alignItems: 'center', background: '#F5F5F5', 
                         borderRadius: 8, padding: '2px'
                       }}>
-                        <button style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BsDash /></button>
+                        <button onClick={() => handleUpdateQty(item.id, item.quantity - 1)} style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BsDash /></button>
                         <span style={{ padding: '0 8px', fontSize: 12, fontWeight: 800 }}>{item.quantity}</span>
-                        <button style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BsPlus /></button>
+                        <button onClick={() => handleUpdateQty(item.id, item.quantity + 1)} style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BsPlus /></button>
                       </div>
                     </div>
                   </div>
@@ -130,7 +175,7 @@ export default function CartPage() {
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <RollingPrice price={total} size={16} color="#FFFFFF" />
-                  <span style={{ fontSize: 9, fontWeight: 700, opacity: 0.7, textTransform: 'uppercase' }}>2 Items in Bag</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, opacity: 0.7, textTransform: 'uppercase' }}>{cartItems.length} Items in Bag</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 900 }}>
                   Checkout <BsArrowRight />

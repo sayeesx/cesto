@@ -1,0 +1,237 @@
+﻿
+> api@0.0.1 verify:backend
+> npx ts-node scripts/run_backend_verification.ts
+
+=================================
+ CESTO BACKEND VERIFICATION SUITE
+=================================
+
+
+Γû╢ Running verify_env...
+Γùç injected env (4) from .env // tip: Γîÿ custom filepath { path: '/custom/path/.env' }
+--- Environment Validation ---
+[PASS] DATABASE_URL exists.
+[PASS] JWT_SECRET exists.
+[PASS] REFRESH_TOKEN_SECRET exists.
+
+--- Payment Integrations ---
+[SKIPPED] RAZORPAY_KEY_ID missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_KEY_SECRET missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET missing. Razorpay Webhook tests will be skipped.
+
+--- Storage Integrations ---
+[SKIPPED] R2_ACCOUNT_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_ACCESS_KEY_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_SECRET_ACCESS_KEY missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_BUCKET_NAME missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_PUBLIC_URL missing. Cloudflare R2 tests will be skipped.
+
+Γ£à Core Environment Validation Passed.
+
+
+Γû╢ Running verify_db...
+Γùç injected env (4) from .env // tip: Γîÿ enable debugging { debug: true }
+--- Database Connectivity Verification ---
+[PASS] Connected to DB successfully.
+Users: 1
+Products: 52
+Categories: 12
+Orders: 0
+[PASS] Admin user verified.
+[PASS] At least 30 products verified.
+
+Γ£à Database Connectivity & State Passed.
+
+
+Γû╢ Running test_health...
+--- Health Endpoints Verification ---
+
+node.exe : TypeError: fetch failed
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (T 
+   ypeError: fetch failed:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandErr 
+   or
+ 
+    at 
+node:internal/deps/undici/undici:13502:13
+    at processTicksAndRejections 
+(node:internal/process/task_queues:105:5)
+    at async request (C:\Users\unknown user\One
+Drive\Desktop\Narrs\cesto\apps\api\scripts\test
+_health.ts:4:15)
+    at async testPath (C:\Users\unknown user\On
+eDrive\Desktop\Narrs\cesto\apps\api\scripts\tes
+t_health.ts:13:17)
+    at async run (C:\Users\unknown user\OneDriv
+e\Desktop\Narrs\cesto\apps\api\scripts\test_hea
+lth.ts:27:3) {
+  [cause]: AggregateError
+      at internalConnectMultiple 
+(node:net:1139:18)
+      at afterConnectMultiple 
+(node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+
+Γ¥î test_health FAILED.
+
+Γû╢ Running test_auth_flow...
+--- Auth Flow E2E Test ---
+
+TypeError: fetch failed
+    at 
+node:internal/deps/undici/undici:13502:13
+    at processTicksAndRejections 
+(node:internal/process/task_queues:105:5)
+    at async request (C:\Users\unknown user\One
+Drive\Desktop\Narrs\cesto\apps\api\scripts\test
+_auth_flow.ts:7:15)
+    at async run (C:\Users\unknown user\OneDriv
+e\Desktop\Narrs\cesto\apps\api\scripts\test_aut
+h_flow.ts:24:13) {
+  [cause]: AggregateError
+      at internalConnectMultiple 
+(node:net:1139:18)
+      at afterConnectMultiple 
+(node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+
+Γ¥î test_auth_flow FAILED.
+
+Γû╢ Running test_rbac...
+--- RBAC Sandbox Test ---
+
+TypeError: fetch failed
+    at 
+node:internal/deps/undici/undici:13502:13
+    at processTicksAndRejections 
+(node:internal/process/task_queues:105:5)
+Γ¥î test_rbac FAILED.
+
+Γû╢ Running test_catalog...
+    at async request (C:\Users\unknown user\One
+Drive\Desktop\Narrs\cesto\apps\api\scripts\test
+_rbac.ts:6:15)
+    at async run (C:\Users\unknown user\OneDriv
+e\Desktop\Narrs\cesto\apps\api\scripts\test_rba
+c.ts:15:19) {
+  [cause]: AggregateError
+      at internalConnectMultiple 
+(node:net:1139:18)
+      at afterConnectMultiple 
+(node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+
+--- Catalog E2E Test ---
+
+Γ¥î test_catalog FAILED.
+TypeError: fetch failed
+    at 
+node:internal/deps/undici/undici:13502:13
+    at processTicksAndRejections 
+(node:internal/process/task_queues:105:5)
+    at async request (C:\Users\unknown user\One
+Drive\Desktop\Narrs\cesto\apps\api\scripts\test
+_catalog.ts:4:15)
+    at async run (C:\Users\unknown user\OneDriv
+e\Desktop\Narrs\cesto\apps\api\scripts\test_cat
+alog.ts:11:13) {
+  [cause]: AggregateError
+      at internalConnectMultiple 
+(node:net:1139:18)
+      at afterConnectMultiple 
+(node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+
+
+Γû╢ Running test_checkout_flow...
+--- Checkout Flow E2E Test ---
+
+TypeError: fetch failed
+    at 
+node:internal/deps/undici/undici:13502:13
+    at processTicksAndRejections 
+(node:internal/process/task_queues:105:5)
+    at async request (C:\Users\unknown user\One
+Drive\Desktop\Narrs\cesto\apps\api\scripts\test
+_checkout_flow.ts:6:15)
+    at async run (C:\Users\unknown user\OneDriv
+e\Desktop\Narrs\cesto\apps\api\scripts\test_che
+ckout_flow.ts:14:19) {
+  [cause]: AggregateError
+      at internalConnectMultiple 
+(node:net:1139:18)
+      at afterConnectMultiple 
+(node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+
+Γ¥î test_checkout_flow FAILED.
+
+Γû╢ Running test_overselling...
+Γùç injected env (4) from .env // tip: Γùê encrypted .env [www.dotenvx.com]
+--- Starting Concurrent Checkout / Overselling Test ---
+[Setup] Created Product e09d7a59-a831-4a0e-999c-8f0a7e406d5e with Stock = 1
+[Test] Triggering two simultaneous checkouts for the same product...
+[Verification] Final Product Stock: 1
+[Verification] Final Product Reserved Stock: 0
+≡ƒÆÇ RESULT: FAILURE! Inventory state is corrupted.
+
+
+Γû╢ Running test_razorpay_signature...
+--- Razorpay Signature Check ---
+[SKIPPED] RAZORPAY_KEY_SECRET missing.
+
+
+Γû╢ Running test_razorpay_webhook_idempotency...
+--- Razorpay Webhook Idempotency & Signature ---
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET is missing. Skipping tests.
+
+
+Γû╢ Running test_r2_upload...
+--- R2 Storage Presigned Upload E2E ---
+[SKIPPED] Cloudflare R2 secrets are missing.
+
+
+=================================
+   BACKEND VERIFICATION REPORT
+=================================
+- Passed: 2
+- Skipped: 4
+- Failed: 5
+
+CRITICAL BLOCKERS DETECTED:
+  - test_auth_flow
+  - test_catalog
+  - test_checkout_flow
+
+Safe to proceed to frontend: NO
+npm error Lifecycle script `verify:backend` 
+failed with error:
+npm error code 1
+npm error path C:\Users\unknown 
+user\OneDrive\Desktop\Narrs\cesto\apps\api
+npm error workspace api@0.0.1
+npm error location C:\Users\unknown 
+user\OneDrive\Desktop\Narrs\cesto\apps\api
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe 
+/d /s /c npx ts-node 
+scripts/run_backend_verification.ts

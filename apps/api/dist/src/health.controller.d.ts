@@ -9,6 +9,11 @@ export declare class HealthController {
     healthDb(): Promise<{
         status: string;
         db: string;
+        message?: undefined;
+    } | {
+        status: string;
+        db: string;
+        message: any;
     }>;
     healthRedis(): {
         status: string;

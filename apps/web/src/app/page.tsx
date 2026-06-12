@@ -28,30 +28,30 @@ const occasions = [
   { name: 'Celebrate', img: '/occasion/celeberation.avif', slug: 'celebration' },
 ];
 
-const demoProducts = [
-  { id: '1', name: 'Sunrise Blooms Bouquet', slug: 'sunrise-blooms', price: 899, compareAtPrice: 1199, deliveryEstimate: 'Same Day', isBestseller: true },
-  { id: '2', name: 'Premium Chocolate Hamper', slug: 'choco-hamper', price: 1499, compareAtPrice: 1999, deliveryEstimate: 'Same Day', isBestseller: true },
-  { id: '3', name: 'Red Rose Arrangement', slug: 'red-roses', price: 699, deliveryEstimate: 'Same Day' },
-  { id: '4', name: 'Birthday Cake Delight', slug: 'birthday-cake', price: 599, compareAtPrice: 749, deliveryEstimate: '2 Hours', isNew: true },
-  { id: '5', name: 'Luxury Gift Hamper', slug: 'luxury-hamper', price: 2499, compareAtPrice: 2999, deliveryEstimate: 'Same Day' },
-  { id: '6', name: 'Mixed Fruit Basket', slug: 'fruit-basket', price: 799, deliveryEstimate: 'Same Day', isNew: true },
-  { id: '7', name: 'Personalised Photo Frame', slug: 'photo-frame', price: 449, compareAtPrice: 599, deliveryEstimate: 'Next Day' },
-  { id: '8', name: 'Orchid Plant in Pot', slug: 'orchid-plant', price: 999, deliveryEstimate: 'Same Day', isBestseller: true },
-];
+import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomePage() {
   const [showLocation, setShowLocation] = useState(false);
-  const [products, setProducts] = useState<any[]>(demoProducts);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/v1/products`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.length > 0) setProducts(data);
-        }
-      } catch {}
+        const [prodData, catData] = await Promise.all([
+          apiClient.getProducts(),
+          apiClient.getCategories()
+        ]);
+        setProducts(prodData);
+        setCategories(catData);
+      } catch (err) {
+        console.error('Failed to load homepage data', err);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, []);
@@ -60,6 +60,7 @@ export default function HomePage() {
 
   return (
     <>
+      <Header />
       {/* ── SEAMLESS LOOPING PROMO STRIP ── */}
       <div className="promo-strip" style={{ position: 'relative', zIndex: 110 }}>
         <div className="promo-strip__track">
@@ -128,19 +129,19 @@ export default function HomePage() {
             gap: 12,
             padding: '0 16px'
           }}>
-            {[
-              { name: 'Flowers', img: '/flowers.webp', slug: 'flowers' },
-              { name: 'Cakes', img: '/cakes.webp', slug: 'cakes' },
-              { name: 'Hampers', img: '/hampers.webp', slug: 'hampers' },
-              { name: 'Chocolates', img: '/chocolates.webp', slug: 'chocolates' },
-              { name: 'Personalised', img: '/personalised.webp', slug: 'personalised' },
-              { name: 'Jewellery', img: '/jewellery.webp', slug: 'jewellery' },
-              { name: 'Crafts', img: '/crafts.webp', slug: 'crafts' },
-              { name: 'Treats', img: '/treats.webp', slug: 'treats' },
-            ].map((cat) => (
+            {(categories.length > 0 ? categories.slice(0, 8) : [
+              { name: 'Flowers', imageUrl: '/flowers.webp', slug: 'flowers' },
+              { name: 'Cakes', imageUrl: '/cakes.webp', slug: 'cakes' },
+              { name: 'Hampers', imageUrl: '/hampers.webp', slug: 'hampers' },
+              { name: 'Chocolates', imageUrl: '/chocolates.webp', slug: 'chocolates' },
+              { name: 'Personalised', imageUrl: '/personalised.webp', slug: 'personalised' },
+              { name: 'Jewellery', imageUrl: '/jewellery.webp', slug: 'jewellery' },
+              { name: 'Crafts', imageUrl: '/crafts.webp', slug: 'crafts' },
+              { name: 'Treats', imageUrl: '/treats.webp', slug: 'treats' },
+            ]).map((cat) => (
               <Link key={cat.slug} href={`/category/${cat.slug}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
                 <div style={{ width: 76, height: 76, borderRadius: 20, background: '#FCF9FA', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #F8EDF4' }}>
-                  <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={cat.imageUrl || '/placeholder.png'} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <span style={{ fontSize: 10, fontWeight: 800, color: '#3C3C3C', textAlign: 'center' }}>{cat.name}</span>
               </Link>
@@ -166,43 +167,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Father's Day Section ── */}
-        <section style={{
-          background: 'linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 40%, #ffffff 100%)',
-          padding: '28px 0 8px',
-          borderTop: '6px solid #F5F5F5',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, padding: '0 16px' }}>
-            <div>
-              <h2 style={{ fontSize: 17, fontWeight: 900, color: '#1E3A8A', letterSpacing: '-0.3px' }}>For Dad, With Love</h2>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#60A5FA', marginTop: 2 }}>Father's Day special gifts</p>
-            </div>
-            <Link href="/occasion/fathers-day" style={{ fontSize: 12, fontWeight: 800, color: '#2563EB', textDecoration: 'none' }}>View all</Link>
-          </div>
-          {/* Banner */}
-          <div style={{ padding: '0 16px 14px' }}>
-            <div style={{
-              borderRadius: 18, overflow: 'hidden', aspectRatio: '2.4',
-              background: 'url(https://res.cloudinary.com/dar6yzr7z/image/upload/f_auto,q_auto/v1780908820/fathersday_y8bigl.avif)',
-              backgroundSize: 'cover', backgroundPosition: 'center',
-              border: '1px solid rgba(37,99,235,0.12)',
-            }} />
-          </div>
-          {/* Product cards in blue-tinted containers */}
-          <div className="no-scrollbar" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px 24px' }}>
-            {bestsellers.map((product: any) => (
-              <div key={product.id} style={{
-                width: 158, flexShrink: 0,
-                borderRadius: 16,
-                overflow: 'hidden',
-              }}>
-                <ProductCard {...product} tint="blue" />
-              </div>
-            ))}
-            <div style={{ flexShrink: 0, width: 4 }} />
-          </div>
-        </section>
-
         {/* ── Bestsellers ── */}
         <section style={{ background: '#FFFFFF', padding: '24px 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 16px' }}>
@@ -210,11 +174,15 @@ export default function HomePage() {
             <Link href="/shop" style={{ fontSize: 12, fontWeight: 800, color: '#b22153', textDecoration: 'none' }}>View all</Link>
           </div>
           <div className="no-scrollbar" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px 12px' }}>
-            {bestsellers.map((product: any) => (
-              <div key={product.id} style={{ width: 160, flexShrink: 0 }}>
-                <ProductCard {...product} />
-              </div>
-            ))}
+            {bestsellers.length > 0 ? (
+              bestsellers.map((product: any) => (
+                <div key={product.id} style={{ width: 160, flexShrink: 0 }}>
+                  <ProductCard {...product} />
+                </div>
+              ))
+            ) : (
+              <p style={{ fontSize: 12, padding: '0 16px' }}>Loading bestsellers...</p>
+            )}
             <div style={{ flexShrink: 0, width: 4 }} />
           </div>
         </section>

@@ -2,24 +2,21 @@ import { PaymentsService } from './payments.service';
 export declare class PaymentsController {
     private readonly paymentsService;
     constructor(paymentsService: PaymentsService);
-    createRazorpayOrder(dto: {
-        orderId: string;
-    }): Promise<{
-        razorpayOrderId: string | null;
-        amount: number;
+    createOrder(req: any, orderId: string): Promise<{
+        razorpayOrderId: any;
+        amount: any;
         currency: string;
-        orderId: string;
-        orderNumber: string;
+        orderId: any;
     }>;
-    verifyPayment(dto: {
+    verify(req: any, dto: {
         razorpayOrderId: string;
         razorpayPaymentId: string;
         razorpaySignature: string;
     }): Promise<{
-        verified: boolean;
-        orderId: string;
+        status: string;
+        orderId: any;
     }>;
-    handleWebhook(body: any, signature: string): Promise<{
-        received: boolean;
+    webhook(req: any, signature: string, eventId: string): Promise<{
+        status: string;
     }>;
 }

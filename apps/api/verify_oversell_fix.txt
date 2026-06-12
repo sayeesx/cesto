@@ -1,0 +1,159 @@
+﻿=================================
+ CESTO BACKEND VERIFICATION SUITE
+=================================
+
+
+Γû╢ Running verify_env...
+Γùç injected env (4) from .env // tip: Γîÿ override existing { override: true }
+--- Environment Validation ---
+[PASS] DATABASE_URL exists.
+[PASS] JWT_SECRET exists.
+[PASS] REFRESH_TOKEN_SECRET exists.
+
+--- Payment Integrations ---
+[SKIPPED] RAZORPAY_KEY_ID missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_KEY_SECRET missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET missing. Razorpay Webhook tests will be skipped.
+
+--- Storage Integrations ---
+[SKIPPED] R2_ACCOUNT_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_ACCESS_KEY_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_SECRET_ACCESS_KEY missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_BUCKET_NAME missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_PUBLIC_URL missing. Cloudflare R2 tests will be skipped.
+
+Γ£à Core Environment Validation Passed.
+
+
+Γû╢ Running verify_db...
+Γùç injected env (4) from .env // tip: Γîÿ override existing { override: true }
+--- Database Connectivity Verification ---
+[PASS] Connected to DB successfully.
+Users: 1
+Products: 52
+Categories: 12
+Orders: 0
+[PASS] Admin user verified.
+[PASS] At least 30 products verified.
+
+Γ£à Database Connectivity & State Passed.
+
+
+Γû╢ Running test_health...
+--- Health Endpoints Verification ---
+[PASS] /health responded: {"status":"ok","timestamp":"2026-06-10T16:31:32.729Z"}
+[PASS] /health/redis responded: {"status":"ok","redis":"not_configured"}
+
+node.exe : [FAIL] /health/db connected but DB 
+is disconnected. { status: 'error', db: 
+'disconnected' }
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([ 
+   FAIL] /health/...disconnected' }:String) [  
+  ], RemoteException
+    + FullyQualifiedErrorId : NativeCommandErr 
+   or
+ 
+
+Γ¥î test_health FAILED.
+
+Γû╢ Running test_auth_flow...
+--- Auth Flow E2E Test ---
+
+Γ¥î test_auth_flow FAILED.
+
+Γû╢ Running test_rbac...
+[FAIL] Registration: 500 { statusCode: 500, 
+message: 'Internal server error' }
+
+--- RBAC Sandbox Test ---
+
+[FAIL] Could not obtain customer token: { 
+statusCode: 500, message: 'Internal server 
+error' }
+
+Γ¥î test_rbac FAILED.
+
+Γû╢ Running test_catalog...
+--- Catalog E2E Test ---
+
+Γ£à Catalog Endpoint Matrix verified.
+
+
+Γû╢ Running test_checkout_flow...
+--- Checkout Flow E2E Test ---
+
+[FAIL] Registration failed: 500 { statusCode: 
+500, message: 'Internal server error' }
+
+Γ¥î test_checkout_flow FAILED.
+
+Γû╢ Running test_overselling...
+Γùç injected env (4) from .env // tip: Γùê encrypted .env [www.dotenvx.com]
+--- Starting Concurrent Checkout / Overselling Test ---
+[Setup] Created Product 7b81139a-06df-4f68-868a-c04d4cce08ae with Stock = 1
+[Setup] Created Cart1=b6e26093-a646-470f-ac0c-11fae63b1d03, Cart2=627c38bc-cc75-4a19-9314-776f76e2ab9d
+
+Error: Cannot find module 'C:\Users\unknown use
+r\OneDrive\Desktop\Narrs\cesto\apps\api\src\mod
+ules\orders\orders.service' imported from 
+C:\Users\unknown user\OneDrive\Desktop\Narrs\ce
+sto\apps\api\scripts\test_overselling.ts
+    at finalizeResolution 
+(node:internal/modules/esm/resolve:275:11)
+    at moduleResolve 
+(node:internal/modules/esm/resolve:860:10)
+Γ¥î test_overselling FAILED.
+    at defaultResolve 
+(node:internal/modules/esm/resolve:984:11)
+    at ModuleLoader.defaultResolve 
+(node:internal/modules/esm/loader:685:12)
+
+Γû╢ Running test_razorpay_signature...
+    at ModuleLoader.#cachedDefaultResolve 
+(node:internal/modules/esm/loader:634:25)
+    at ModuleLoader.resolve 
+(node:internal/modules/esm/loader:617:38)
+    at ModuleLoader.getModuleJobForImport 
+(node:internal/modules/esm/loader:273:38)
+    at onImport.tracePromise.__proto__ 
+(node:internal/modules/esm/loader:577:36)
+    at TracingChannel.tracePromise 
+(node:diagnostics_channel:344:14)
+    at ModuleLoader.import 
+(node:internal/modules/esm/loader:576:21) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///C:/Users/unknown%20user/OneDriv
+e/Desktop/Narrs/cesto/apps/api/src/modules/orde
+rs/orders.service'
+}
+
+--- Razorpay Signature Check ---
+[SKIPPED] RAZORPAY_KEY_SECRET missing.
+
+
+Γû╢ Running test_razorpay_webhook_idempotency...
+--- Razorpay Webhook Idempotency & Signature ---
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET is missing. Skipping tests.
+
+
+Γû╢ Running test_r2_upload...
+--- R2 Storage Presigned Upload E2E ---
+[SKIPPED] Cloudflare R2 secrets are missing.
+
+
+=================================
+   BACKEND VERIFICATION REPORT
+=================================
+- Passed: 2
+- Skipped: 4
+- Failed: 5
+
+CRITICAL BLOCKERS DETECTED:
+  - test_auth_flow
+  - test_checkout_flow
+  - test_overselling
+
+Safe to proceed to frontend: NO

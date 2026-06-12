@@ -21,21 +21,34 @@ let UploadsController = class UploadsController {
     constructor(uploadsService) {
         this.uploadsService = uploadsService;
     }
-    getPresignedUrl(dto) {
-        return this.uploadsService.getPresignedUploadUrl(dto.folder, dto.contentType);
+    getPresignedUrl(req, folder = 'general', contentType = 'image/jpeg') {
+        return this.uploadsService.getPresignedUploadUrl(folder, contentType, req.user.sub);
+    }
+    deleteFile(req, key) {
+        return this.uploadsService.deleteFile(key, req.user.sub);
     }
 };
 exports.UploadsController = UploadsController;
 __decorate([
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, common_1.Post)('presigned-url'),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)('folder')),
+    __param(2, (0, common_1.Body)('contentType')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], UploadsController.prototype, "getPresignedUrl", null);
+__decorate([
+    (0, common_1.Delete)(':key'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('key')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], UploadsController.prototype, "deleteFile", null);
 exports.UploadsController = UploadsController = __decorate([
     (0, common_1.Controller)('v1/uploads'),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     __metadata("design:paramtypes", [uploads_service_1.UploadsService])
 ], UploadsController);
 //# sourceMappingURL=uploads.controller.js.map

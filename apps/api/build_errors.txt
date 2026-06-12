@@ -1,0 +1,128 @@
+﻿
+> api@0.0.1 build
+> nest build
+
+node.exe : [96msrc/modules/admin/admin.service
+.ts[0m:[93m72[0m:[93m9[0m - 
+[91merror[0m[90m TS2561: [0mObject literal 
+may only specify known properties, but 
+'entity' does not exist in type 
+'(Without<AuditLogCreateInput, 
+AuditLogUncheckedCreateInput> & 
+AuditLogUncheckedCreateInput) | (Without<...> 
+& AuditLogCreateInput)'. Did you mean to write 
+'entityId'?
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( 
+   [96msrc/module...ite 'entityId'?:String) [  
+  ], RemoteException
+    + FullyQualifiedErrorId : NativeCommandErr 
+   or
+ 
+
+[7m72[0m         entity: 'Order',
+[7m  [0m [91m        ~~~~~~[0m
+
+  [96m../../node_modules/.prisma/client/index.
+d.ts[0m:[93m41670[0m:[93m5[0m
+    [7m41670[0m     data: 
+XOR<AuditLogCreateInput, 
+AuditLogUncheckedCreateInput>
+    [7m     [0m [96m    ~~~~[0m
+    The expected type comes from property 
+'data' which is declared here on type '{ 
+select?: AuditLogSelect<DefaultArgs> | null | 
+undefined; omit?: AuditLogOmit<DefaultArgs> | 
+null | undefined; include?: 
+AuditLogInclude<...> | ... 1 more ... | 
+undefined; data: (Without<...> & 
+AuditLogUncheckedCreateInput) | (Without<...> 
+& AuditLogCreateInput); }'
+[96msrc/modules/auth/auth.controller.ts[0m:[
+93m32[0m:[93m10[0m - [91merror[0m[90m 
+TS7006: [0mParameter 'req' implicitly has an 
+'any' type.
+
+[7m32[0m   logout(@Req() req, @Body() dto: 
+RefreshDto) {
+[7m  [0m [91m         ~~~~~~~~~~[0m
+[96msrc/modules/orders/orders.service.ts[0m:
+[93m84[0m:[93m15[0m - [91merror[0m[90m 
+TS2322: [0mType '{ productId: string; 
+quantity: number; priceAt: number; 
+variantData: JsonValue; }[]' is not assignable 
+to type 
+'(Without<OrderItemCreateWithoutOrderInput, 
+OrderItemUncheckedCreateWithoutOrderInput> & 
+OrderItemUncheckedCreateWithoutOrderInput) | 
+(Without<...> & 
+OrderItemCreateWithoutOrderInput) | 
+OrderItemCreateWithoutOrderInput[] | 
+OrderItemUncheckedCreateWithoutOrderInput[] | 
+undefined'.
+  Type '{ productId: string; quantity: number; 
+priceAt: number; variantData: JsonValue; }[]' 
+is not assignable to type 
+'OrderItemCreateWithoutOrderInput[]'.
+    Property 'product' is missing in type '{ 
+productId: string; quantity: number; priceAt: 
+number; variantData: JsonValue; }' but 
+required in type 
+'OrderItemCreateWithoutOrderInput'.
+
+[7m84[0m               create: 
+cart.items.map(item => ({
+[7m  [0m [91m              ~~~~~~[0m
+
+  [96m../../node_modules/.prisma/client/index.
+d.ts[0m:[93m54934[0m:[93m5[0m
+    [7m54934[0m     product: 
+ProductCreateNestedOneWithoutOrderItemsInput
+    [7m     [0m [96m    ~~~~~~~[0m
+    'product' is declared here.
+[96msrc/modules/payments/payments.controller.t
+s[0m:[93m11[0m:[93m15[0m - 
+[91merror[0m[90m TS7006: [0mParameter 
+'req' implicitly has an 'any' type.
+
+[7m11[0m   createOrder(@Req() req, 
+@Body('orderId') orderId: string) {
+[7m  [0m [91m              ~~~~~~~~~~[0m
+[96msrc/modules/payments/payments.controller.t
+s[0m:[93m18[0m:[93m5[0m - 
+[91merror[0m[90m TS7006: [0mParameter 
+'req' implicitly has an 'any' type.
+
+[7m18[0m     @Req() req,
+[7m  [0m [91m    ~~~~~~~~~~[0m
+[96msrc/modules/uploads/uploads.controller.ts
+[0m:[93m12[0m:[93m5[0m - 
+[91merror[0m[90m TS7006: [0mParameter 
+'req' implicitly has an 'any' type.
+
+[7m12[0m     @Req() req,
+[7m  [0m [91m    ~~~~~~~~~~[0m
+[96msrc/modules/uploads/uploads.controller.ts
+[0m:[93m20[0m:[93m14[0m - 
+[91merror[0m[90m TS7006: [0mParameter 
+'req' implicitly has an 'any' type.
+
+[7m20[0m   deleteFile(@Req() req, 
+@Param('key') key: string) {
+[7m  [0m [91m             ~~~~~~~~~~[0m
+
+Found 7 error(s).
+
+npm error Lifecycle script `build` failed with 
+error:
+npm error code 1
+npm error path C:\Users\unknown 
+user\OneDrive\Desktop\Narrs\cesto\apps\api
+npm error workspace api@0.0.1
+npm error location C:\Users\unknown 
+user\OneDrive\Desktop\Narrs\cesto\apps\api
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe 
+/d /s /c nest build

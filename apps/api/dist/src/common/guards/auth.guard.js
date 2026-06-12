@@ -21,7 +21,7 @@ let AuthGuard = class AuthGuard {
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
         if (!token) {
-            throw new common_1.UnauthorizedException('Authentication token missing');
+            throw new common_1.UnauthorizedException('No token provided');
         }
         try {
             const payload = await this.jwtService.verifyAsync(token, {
@@ -30,7 +30,7 @@ let AuthGuard = class AuthGuard {
             request['user'] = payload;
         }
         catch {
-            throw new common_1.UnauthorizedException('Invalid or expired authentication token');
+            throw new common_1.UnauthorizedException('Invalid or expired token');
         }
         return true;
     }

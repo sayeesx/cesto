@@ -33,7 +33,37 @@ const menuItems = [
   ]}
 ];
 
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
 export default function AccountPage() {
+  const { user, isAuthenticated, loading, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login?redirect=/account');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (loading || !isAuthenticated) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
+
+  const adminMenu = (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? {
+    group: 'Administration', items: [
+      { label: 'Admin Dashboard', icon: BsShieldLock, link: '/admin/dashboard' },
+    ]
+  } : null;
+
+  const displayMenuItems = adminMenu ? [adminMenu, ...menuItems] : menuItems;
+
   return (
     <>
       <main style={{ minHeight: '100vh', background: '#FCF9FA', paddingBottom: 100 }}>
@@ -52,15 +82,15 @@ export default function AccountPage() {
           }}>
             <BsPersonCircle size={48} color="white" />
           </div>
-          <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>John Doe</h1>
-          <p style={{ fontSize: 13, opacity: 0.8, fontWeight: 500 }}>john.doe@example.com</p>
+          <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{user?.name || 'User'}</h1>
+          <p style={{ fontSize: 13, opacity: 0.8, fontWeight: 500 }}>{user?.email}</p>
         </div>
 
         {/* Account Menu */}
         <div style={{ maxWidth: 600, margin: '-24px auto 0', padding: '0 16px' }}>
           <div style={{ background: 'white', borderRadius: 20, boxShadow: '0 8px 32px rgba(178, 33, 83, 0.05)', overflow: 'hidden' }}>
-            {menuItems.map((group, gIdx) => (
-              <div key={group.group} style={{ borderBottom: gIdx < menuItems.length - 1 ? '8px solid #FCF9FA' : 'none' }}>
+            {displayMenuItems.map((group, gIdx) => (
+              <div key={group.group} style={{ borderBottom: gIdx < displayMenuItems.length - 1 ? '8px solid #FCF9FA' : 'none' }}>
                 <div style={{ padding: '16px 20px 8px', fontSize: 11, fontWeight: 900, color: '#A9A0AE', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   {group.group}
                 </div>
@@ -75,7 +105,7 @@ export default function AccountPage() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1 }}>
-                      <item.icon size={18} color={iIdx === 0 && gIdx === 0 ? '#b22153' : '#5F5F5F'} />
+                      <item.icon size={18} color="#5F5F5F" />
                       <span style={{ fontSize: 14, fontWeight: 700 }}>{item.label}</span>
                     </div>
                   </Link>
@@ -84,11 +114,14 @@ export default function AccountPage() {
             ))}
           </div>
 
-          <button style={{
-            width: '100%', marginTop: 24, padding: '18px', background: 'white', borderRadius: 20,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            color: '#EF4444', fontWeight: 800, fontSize: 14, border: '1px solid #FEE2E2'
-          }}>
+          <button 
+            onClick={handleLogout}
+            style={{
+              width: '100%', marginTop: 24, padding: '18px', background: 'white', borderRadius: 20,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              color: '#EF4444', fontWeight: 800, fontSize: 14, border: '1px solid #FEE2E2'
+            }}
+          >
             <BsBoxArrowRight size={18} /> Logout
           </button>
         </div>

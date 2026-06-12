@@ -12,13 +12,23 @@
     "dev": "nest start --watch",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "verify:env": "npx ts-node scripts/verify_env.ts",
+    "verify:db": "npx ts-node scripts/verify_db.ts",
+    "test:e2e:auth": "npx ts-node scripts/test_auth_flow.ts",
+    "test:e2e:rbac": "npx ts-node scripts/test_rbac.ts",
+    "test:e2e:catalog": "npx ts-node scripts/test_catalog.ts",
+    "test:e2e:checkout": "npx ts-node scripts/test_checkout_flow.ts",
+    "test:e2e:overselling": "npx ts-node scripts/test_overselling.ts",
+    "test:e2e:payments": "npx ts-node scripts/test_razorpay_signature.ts && npx ts-node scripts/test_razorpay_webhook_idempotency.ts",
+    "test:e2e:r2": "npx ts-node scripts/test_r2_upload.ts",
+    "verify:backend": "npx ts-node scripts/run_backend_verification.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1063.0",
@@ -80,5 +90,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

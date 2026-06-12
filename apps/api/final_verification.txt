@@ -1,0 +1,135 @@
+﻿=================================
+ CESTO BACKEND VERIFICATION SUITE
+=================================
+
+
+Γû╢ Running verify_env...
+Γùç injected env (4) from .env // tip: Γîÿ enable debugging { debug: true }
+--- Environment Validation ---
+[PASS] DATABASE_URL exists.
+[PASS] JWT_SECRET exists.
+[PASS] REFRESH_TOKEN_SECRET exists.
+
+--- Payment Integrations ---
+[SKIPPED] RAZORPAY_KEY_ID missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_KEY_SECRET missing. Razorpay Payment tests will be skipped.
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET missing. Razorpay Webhook tests will be skipped.
+
+--- Storage Integrations ---
+[SKIPPED] R2_ACCOUNT_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_ACCESS_KEY_ID missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_SECRET_ACCESS_KEY missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_BUCKET_NAME missing. Cloudflare R2 tests will be skipped.
+[SKIPPED] R2_PUBLIC_URL missing. Cloudflare R2 tests will be skipped.
+
+Γ£à Core Environment Validation Passed.
+
+
+Γû╢ Running verify_db...
+Γùç injected env (4) from .env // tip: Γùê secrets for agents [www.dotenvx.com]
+--- Database Connectivity Verification ---
+[PASS] Connected to DB successfully.
+Users: 8
+Products: 53
+Categories: 12
+Orders: 0
+[PASS] Admin user verified.
+[PASS] At least 30 products verified.
+
+Γ£à Database Connectivity & State Passed.
+
+
+Γû╢ Running test_health...
+--- Health Endpoints Verification ---
+[PASS] /health responded: {"status":"ok","timestamp":"2026-06-10T16:52:22.609Z"}
+[PASS] /health/db responded: {"status":"ok","db":"connected"}
+[PASS] /health/redis responded: {"status":"ok","redis":"not_configured"}
+
+Γ£à Health Tests Passed.
+
+
+Γû╢ Running test_auth_flow...
+--- Auth Flow E2E Test ---
+[PASS] Customer registered
+[PASS] Customer logged in
+[PASS] Get current user
+[PASS] Token refreshed successfully with rotation.
+[PASS] Reusing old refresh token denied.
+[PASS] User logged out explicitly.
+[PASS] Access using logged out token denied.
+
+Γ£à Auth Flow E2E Passed.
+
+
+Γû╢ Running test_rbac...
+--- RBAC Sandbox Test ---
+
+node.exe : [FAIL] CUSTOMER accessed admin 
+resource. Status: 404
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([ 
+   FAIL] CUSTOMER...ce. Status: 404:String) [  
+  ], RemoteException
+    + FullyQualifiedErrorId : NativeCommandErr 
+   or
+ 
+
+Γ¥î test_rbac FAILED.
+
+Γû╢ Running test_catalog...
+--- Catalog E2E Test ---
+[PASS] List products endpoint reachable.
+[PASS] Category/budget filters endpoint pattern reachable.
+
+Γ£à Catalog Endpoint Matrix verified.
+
+
+Γû╢ Running test_checkout_flow...
+--- Checkout Flow E2E Test ---
+[PASS] Test user registered and logged in.
+[PASS] Using product: FatherΓÇÖs Day Grooming Kit (00dae041-412b-4d26-80ab-bf9b7587f20f)
+[PASS] Order endpoint validates cart properly (400).
+
+Γ£à Checkout Flow E2E Passed.
+
+
+Γû╢ Running test_overselling...
+Γùç injected env (4) from .env // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+--- Starting Concurrent Checkout / Overselling Test ---
+[Setup] Created Product 6c2071c8-128c-4621-aa8c-53b6d1bd9020 with Stock = 1
+[Setup] Created Cart1=4b79fc4d-5a7d-40de-a504-3c1be27c5788, Cart2=7aae92c9-7179-4358-a2ec-4d4e725cc1d0
+[Test] Triggering two simultaneous checkouts for the same 1-stock product...
+[Result] Successes: 1, Failures: 1
+  Γ£à Request 1 Succeeded. Order: CESTO-1781110375675-578
+  Γ¥î Request 2 Failed: Stock changed for Test Limited Product. Please try again.
+[Verification] Final Stock: 0
+[Verification] Final Reserved Stock: 1
+≡ƒÄë RESULT: SUCCESS! Exactly one order succeeded, overselling prevented.
+[Cleanup] Test data removed.
+
+
+Γû╢ Running test_razorpay_signature...
+--- Razorpay Signature Check ---
+[SKIPPED] RAZORPAY_KEY_SECRET missing.
+
+
+Γû╢ Running test_razorpay_webhook_idempotency...
+--- Razorpay Webhook Idempotency & Signature ---
+[SKIPPED] RAZORPAY_WEBHOOK_SECRET is missing. Skipping tests.
+
+
+Γû╢ Running test_r2_upload...
+--- R2 Storage Presigned Upload E2E ---
+[SKIPPED] Cloudflare R2 secrets are missing.
+
+
+=================================
+   BACKEND VERIFICATION REPORT
+=================================
+- Passed: 6
+- Skipped: 4
+- Failed: 1
+
+Safe to proceed to frontend: YES

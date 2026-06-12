@@ -1,0 +1,4 @@
+﻿
+> api@0.0.1 verify:backend
+> npx ts-node scripts/run_backend_verification.ts
+

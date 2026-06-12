@@ -1,0 +1,92 @@
+﻿Γùç injected env (4) from .env // tip: Γùê secrets for agents [www.dotenvx.com]
+=== DATABASE ROLE & RLS DIAGNOSTIC ===
+
+[INFO] Connection: postgresql:****@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
+
+[ROLE] current_user: postgres
+[ROLE] session_user: postgres
+[ROLE] current_database: postgres
+[ROLE] current_setting(role): none
+
+--- RLS STATUS ---
+    RLS ON  Address
+    RLS ON  AdminSetting
+  ≡ƒöÆ RLS ON  AuditLog
+  ≡ƒöÆ RLS ON  Cart
+  ≡ƒöÆ RLS ON  CartItem
+  ≡ƒöÆ RLS ON  Category
+    RLS ON  CorporateEnquiry
+    RLS ON  Coupon
+    RLS ON  CouponUsage
+    RLS ON  DeliveryPartner
+    RLS ON  DeliveryProof
+  ≡ƒöÆ RLS ON  DeliverySlot
+  ≡ƒöÆ RLS ON  DeliveryZone
+  ≡ƒöÆ RLS ON  InventoryMovement
+    RLS ON  Notification
+    RLS ON  Occasion
+  ≡ƒöÆ RLS ON  Order
+  ≡ƒöÆ RLS ON  OrderItem
+  ≡ƒöÆ RLS ON  OrderStatusHistory
+  ≡ƒöÆ RLS ON  Payment
+    RLS ON  PaymentWebhookEvent
+  ≡ƒöÆ RLS ON  Product
+    RLS ON  ProductCategory
+    RLS ON  ProductImage
+    RLS ON  ProductOccasion
+    RLS ON  ProductRelationship
+  ≡ƒöÆ RLS ON  RefreshToken
+    RLS ON  Refund
+    RLS ON  Relationship
+    RLS ON  Reminder
+    RLS ON  Review
+  ≡ƒöÆ RLS ON  User
+    RLS ON  Vendor
+    RLS ON  VendorProduct
+
+--- RLS POLICIES ---
+  Address: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  AdminSetting: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  AuditLog: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Cart: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  CartItem: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Category: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  CorporateEnquiry: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Coupon: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  CouponUsage: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  DeliveryPartner: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  DeliveryProof: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  DeliverySlot: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  DeliveryZone: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  InventoryMovement: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Notification: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Occasion: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Order: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  OrderItem: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  OrderStatusHistory: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Payment: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  PaymentWebhookEvent: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Product: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  ProductCategory: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  ProductImage: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  ProductOccasion: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  ProductRelationship: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  RefreshToken: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Refund: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Relationship: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Reminder: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Review: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  User: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  Vendor: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+  VendorProduct: "Deny all public access" [RESTRICTIVE] roles={public} cmd=ALL qual=false
+
+--- WRITE TESTS ---
+[PASS] User.create succeeded: c486de86-b78f-4cde-94a3-19bf8461e3cf
+[PASS] User.delete succeeded (cleanup)
+[PASS] Product.create succeeded: e447c52a-e963-41b5-9170-a3ca175ca283
+[PASS] Product.delete succeeded (cleanup)
+[PASS] Cart.create succeeded: 2e5013e4-3efd-4936-8caa-f7a95ffa2b73
+[PASS] Cart.delete succeeded (cleanup)
+[PASS] $queryRaw SELECT 1 succeeded
+
+=== DIAGNOSTIC COMPLETE ===

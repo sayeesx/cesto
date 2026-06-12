@@ -1,0 +1,8 @@
+﻿--- RBAC Sandbox Test ---
+[PASS] CUSTOMER blocked from admin dashboard.
+[PASS] CUSTOMER blocked from admin mutations.
+[PASS] CUSTOMER blocked from admin audit logs.
+[SKIPPED] Admin tests skipped ΓÇö could not login as admin.
+[PASS] Invalid token returns 401.
+
+Γ£à RBAC Verification Passed.

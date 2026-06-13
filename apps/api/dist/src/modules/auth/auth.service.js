@@ -71,19 +71,19 @@ let AuthService = class AuthService {
                 phone: dto.phone,
             },
         });
-        return this.generateTokens(user.id, user.email, user.role);
+        return this.generateTokens(user.id, user.email || user.phone || user.id, user.role);
     }
     async login(dto) {
         const user = await this.prisma.user.findUnique({
             where: { email: dto.email },
         });
-        if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
+        if (!user || !user.passwordHash || !(await bcrypt.compare(dto.password, user.passwordHash))) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
         if (!user.isActive) {
             throw new common_1.UnauthorizedException('Account disabled');
         }
-        return this.generateTokens(user.id, user.email, user.role);
+        return this.generateTokens(user.id, user.email || user.phone || user.id, user.role);
     }
     async getProfile(userId) {
         const user = await this.prisma.user.findUnique({
@@ -130,7 +130,7 @@ let AuthService = class AuthService {
             where: { id: savedToken.id },
             data: { revokedAt: new Date() },
         });
-        return this.generateTokens(user.id, user.email, user.role);
+        return this.generateTokens(user.id, user.email || user.phone || user.id, user.role);
     }
     async generateTokens(userId, email, role) {
         const payload = { sub: userId, email, role, jti: crypto.randomUUID() };
@@ -164,6 +164,116 @@ let AuthService = class AuthService {
     }
     hashToken(token) {
         return crypto.createHash('sha256').update(token).digest('hex');
+    }
+    async phoneStart(dto) {
+        const normalizedPhone = this.normalizePhoneNumber(dto.countryCode, dto.phone);
+        if (!this.isValidPhoneNumber(normalizedPhone)) {
+            throw new common_1.BadRequestException('Invalid phone number format');
+        }
+        return {
+            success: true,
+            message: 'OTP verification ready',
+            ...(process.env.NODE_ENV !== 'production' && { devOtp: '1234' })
+        };
+    }
+    async phoneVerify(dto) {
+        const normalizedPhone = this.normalizePhoneNumber(dto.countryCode, dto.phone);
+        if (dto.otp !== '1234') {
+            throw new common_1.UnauthorizedException('Invalid or expired OTP');
+        }
+        const existingUser = await this.prisma.user.findUnique({
+            where: { phone: normalizedPhone },
+        });
+        if (existingUser) {
+            if (!existingUser.isActive) {
+                throw new common_1.UnauthorizedException('Account is disabled');
+            }
+            await this.prisma.user.update({
+                where: { id: existingUser.id },
+                data: { phoneVerifiedAt: new Date() },
+            });
+            const tokens = await this.generateTokens(existingUser.id, existingUser.email || existingUser.phone || existingUser.id, existingUser.role);
+            return {
+                userExists: true,
+                requiresProfile: false,
+                ...tokens,
+                user: {
+                    id: existingUser.id,
+                    email: existingUser.email,
+                    name: existingUser.name,
+                    phone: existingUser.phone,
+                    role: existingUser.role,
+                },
+            };
+        }
+        else {
+            return {
+                userExists: false,
+                requiresProfile: true,
+                message: 'Please complete your profile',
+            };
+        }
+    }
+    async phoneCompleteProfile(dto) {
+        const normalizedPhone = this.normalizePhoneNumber(dto.countryCode, dto.phone);
+        if (dto.otp !== '1234') {
+            throw new common_1.UnauthorizedException('Invalid or expired OTP');
+        }
+        const existingUser = await this.prisma.user.findUnique({
+            where: { phone: normalizedPhone },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('Phone number already registered');
+        }
+        if (dto.email) {
+            const emailExists = await this.prisma.user.findUnique({
+                where: { email: dto.email },
+            });
+            if (emailExists) {
+                throw new common_1.ConflictException('Email already registered');
+            }
+        }
+        const newUser = await this.prisma.user.create({
+            data: {
+                phone: normalizedPhone,
+                countryCode: dto.countryCode,
+                phoneVerifiedAt: new Date(),
+                name: dto.name,
+                email: dto.email || null,
+                age: dto.age || null,
+                gender: dto.gender || null,
+                role: 'CUSTOMER',
+                isActive: true,
+                passwordHash: null,
+            },
+        });
+        const tokens = await this.generateTokens(newUser.id, newUser.email || normalizedPhone, newUser.role);
+        return {
+            success: true,
+            ...tokens,
+            user: {
+                id: newUser.id,
+                email: newUser.email,
+                name: newUser.name,
+                phone: newUser.phone,
+                role: newUser.role,
+            },
+        };
+    }
+    normalizePhoneNumber(countryCode, phone) {
+        const cleanPhone = phone.replace(/\D/g, '');
+        const cleanCountryCode = countryCode.startsWith('+')
+            ? countryCode
+            : `+${countryCode}`;
+        const countryCodeDigits = cleanCountryCode.replace(/\D/g, '');
+        if (cleanPhone.startsWith(countryCodeDigits)) {
+            return `+${cleanPhone}`;
+        }
+        return `${cleanCountryCode}${cleanPhone}`;
+    }
+    isValidPhoneNumber(phone) {
+        const phoneRegex = /^\+[1-9]\d{7,14}$/;
+        return phoneRegex.test(phone);
     }
 };
 exports.AuthService = AuthService;

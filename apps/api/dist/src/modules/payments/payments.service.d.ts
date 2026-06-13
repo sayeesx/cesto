@@ -7,10 +7,10 @@ export declare class PaymentsService {
     private ordersService;
     constructor(prisma: PrismaService, audit: AuditService, ordersService: OrdersService);
     createRazorpayOrder(orderId: string, userId?: string): Promise<{
-        razorpayOrderId: any;
-        amount: any;
+        razorpayOrderId: string | null;
+        amount: number;
         currency: string;
-        orderId: any;
+        orderId: string;
     }>;
     verifyPayment(dto: {
         razorpayOrderId: string;
@@ -18,7 +18,7 @@ export declare class PaymentsService {
         razorpaySignature: string;
     }, userId?: string): Promise<{
         status: string;
-        orderId: any;
+        orderId: string;
     }>;
     handleWebhook(rawBody: string, signature: string, eventId: string): Promise<{
         status: string;

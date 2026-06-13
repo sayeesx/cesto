@@ -16,6 +16,7 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const auth_dto_1 = require("./dto/auth.dto");
+const phone_auth_dto_1 = require("./dto/phone-auth.dto");
 const auth_guard_1 = require("../../common/guards/auth.guard");
 let AuthController = class AuthController {
     authService;
@@ -37,6 +38,15 @@ let AuthController = class AuthController {
     async me(req) {
         const user = await this.authService.getProfile(req.user.sub);
         return user;
+    }
+    phoneStart(dto) {
+        return this.authService.phoneStart(dto);
+    }
+    phoneVerify(dto) {
+        return this.authService.phoneVerify(dto);
+    }
+    phoneCompleteProfile(dto) {
+        return this.authService.phoneCompleteProfile(dto);
     }
 };
 exports.AuthController = AuthController;
@@ -81,6 +91,30 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "me", null);
+__decorate([
+    (0, common_1.Post)('phone/start'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [phone_auth_dto_1.PhoneStartDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "phoneStart", null);
+__decorate([
+    (0, common_1.Post)('phone/verify'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [phone_auth_dto_1.PhoneVerifyDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "phoneVerify", null);
+__decorate([
+    (0, common_1.Post)('phone/complete-profile'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [phone_auth_dto_1.PhoneCompleteProfileDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "phoneCompleteProfile", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('v1/auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

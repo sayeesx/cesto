@@ -26,10 +26,9 @@ export default function ShopPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/v1/products`);
+        const res = await fetch('/api/v1/products');
         if (res.ok) {
           const data = await res.json();
-          // Filter to just show demo products for the sections
           setProducts(data);
         }
       } catch {}
@@ -75,32 +74,39 @@ export default function ShopPage() {
           const sectionProducts = activeProducts.filter(p => !p.slug.includes('x')).slice(0, 5);
 
           return (
-            <section key={section.slug} style={{ background: '#FFFFFF', padding: '24px 0', borderTop: '6px solid #F5F5F5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, padding: '0 16px' }}>
-                <h2 style={{ fontSize: 18, fontWeight: 900, color: '#111111', letterSpacing: '-0.3px' }}>{section.title}</h2>
+            <section key={section.slug} className="shop-section" style={{ background: '#FFFFFF', padding: '24px 0', borderTop: '6px solid #F5F5F5' }}>
+              <div className="section-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, padding: '0 16px' }}>
+                <h2 className="section-heading" style={{ fontSize: 18, fontWeight: 900, color: '#111111', letterSpacing: '-0.3px' }}>{section.title}</h2>
                 <Link href={section.url} style={{ fontSize: 13, fontWeight: 800, color: '#b22153', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
                   View all <BsChevronRight size={10} />
                 </Link>
               </div>
               <div 
-                className="no-scrollbar" 
+                className="no-scrollbar desktop-product-grid" 
                 style={{ 
                   display: 'flex', 
                   gap: 12, 
-                  overflowX: 'auto', 
-                  padding: '0',
-                  scrollSnapType: 'x mandatory'
+                  overflowX: 'auto',
+                  scrollSnapType: 'x mandatory',
                 }}
               >
-                <div style={{ width: 16, flexShrink: 0 }} />
-                {sectionProducts.length > 0 ? sectionProducts.map((p: any) => (
-                  <div key={p.id} style={{ width: 160, flexShrink: 0, scrollSnapAlign: 'start' }}>
+                {sectionProducts.length > 0 ? sectionProducts.map((p: any, index: number) => (
+                  <div 
+                    key={p.id} 
+                    style={{ 
+                      width: 160, 
+                      flexShrink: 0, 
+                      scrollSnapAlign: 'start',
+                      marginLeft: index === 0 ? 16 : 0,
+                    }}
+                  >
                     <ProductCard {...p} />
                   </div>
                 )) : (
-                  <div style={{ padding: '20px', color: '#A9A0AE', fontSize: 12 }}>Loading products...</div>
+                  <div style={{ marginLeft: 16, padding: '20px 0', color: '#A9A0AE', fontSize: 12 }}>Loading products...</div>
                 )}
-                <div style={{ width: 16, flexShrink: 0 }} />
+                {/* Trailing spacer so last card has same breathing room as first */}
+                <div className="scroll-spacer" style={{ width: 16, flexShrink: 0 }} />
               </div>
             </section>
           );

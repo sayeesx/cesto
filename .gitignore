@@ -1,1 +1,45 @@
-node_modules
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Environment files (NEVER commit real secrets)
+.env
+.env.local
+.env.production
+.env.staging
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+prisma/migrations/**/migration_lock.toml
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test
+coverage/
+
+# Temp files
+*.tmp
+seed_err.txt
+seed_data.sql
+enable_rls.sql
+generate_sql_seed.js
+generate_rls.js
+generate_seed_sql.js

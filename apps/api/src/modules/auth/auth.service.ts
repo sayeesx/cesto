@@ -3,11 +3,13 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { PhoneStartDto, PhoneVerifyDto, PhoneCompleteProfileDto } from './dto/phone-auth.dto';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -35,14 +37,14 @@ export class AuthService {
       },
     });
 
-    return this.generateTokens(user.id, user.email, user.role);
+    return this.generateTokens(user.id, user.email || user.phone || user.id, user.role);
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
-    if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
+    if (!user || !user.passwordHash || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -50,7 +52,7 @@ export class AuthService {
       throw new UnauthorizedException('Account disabled');
     }
 
-    return this.generateTokens(user.id, user.email, user.role);
+    return this.generateTokens(user.id, user.email || user.phone || user.id, user.role);
   }
 
   async getProfile(userId: string) {
@@ -108,7 +110,7 @@ export class AuthService {
     });
 
     // Generate new tokens
-    return this.generateTokens(user.id, user.email, user.role);
+    return this.generateTokens(user.id, user.email || user.phone || user.id, user.role);
   }
 
   private async generateTokens(userId: string, email: string, role: string) {
@@ -150,4 +152,191 @@ export class AuthService {
   private hashToken(token: string): string {
     return crypto.createHash('sha256').update(token).digest('hex');
   }
+
+  // === Phone OTP Authentication ===
+  
+  /**
+   * Phone OTP Start: Validates phone number format and prepares for OTP verification
+   * TODO: Integrate with third-party OTP provider (Twilio, AWS SNS, etc.)
+   * Currently hardcoded OTP: 1234
+   */
+  async phoneStart(dto: PhoneStartDto) {
+    const normalizedPhone = this.normalizePhoneNumber(dto.countryCode, dto.phone);
+    
+    // Validate phone number format
+    if (!this.isValidPhoneNumber(normalizedPhone)) {
+      throw new BadRequestException('Invalid phone number format');
+    }
+
+    // TODO: Send OTP via third-party provider
+    // For now, we just return success
+    // const otpCode = this.generateOTP();
+    // await this.sendOTP(normalizedPhone, otpCode);
+
+    return {
+      success: true,
+      message: 'OTP verification ready',
+      // In development, hint the OTP
+      ...(process.env.NODE_ENV !== 'production' && { devOtp: '1234' })
+    };
+  }
+
+  /**
+   * Phone OTP Verify: Verifies OTP and checks if user exists
+   * Returns login tokens if user exists, or requires profile completion if new user
+   */
+  async phoneVerify(dto: PhoneVerifyDto) {
+    const normalizedPhone = this.normalizePhoneNumber(dto.countryCode, dto.phone);
+
+    // Verify OTP (hardcoded for now)
+    // TODO: Replace with third-party OTP verification
+    if (dto.otp !== '1234') {
+      throw new UnauthorizedException('Invalid or expired OTP');
+    }
+
+    // Check if user exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { phone: normalizedPhone },
+    });
+
+    if (existingUser) {
+      // User exists - proceed with login
+      if (!existingUser.isActive) {
+        throw new UnauthorizedException('Account is disabled');
+      }
+
+      // Update phone verified timestamp
+      await this.prisma.user.update({
+        where: { id: existingUser.id },
+        data: { phoneVerifiedAt: new Date() },
+      });
+
+      const tokens = await this.generateTokens(
+        existingUser.id,
+        existingUser.email || existingUser.phone || existingUser.id,
+        existingUser.role
+      );
+
+      return {
+        userExists: true,
+        requiresProfile: false,
+        ...tokens,
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+          name: existingUser.name,
+          phone: existingUser.phone,
+          role: existingUser.role,
+        },
+      };
+    } else {
+      // New user - requires profile completion
+      return {
+        userExists: false,
+        requiresProfile: true,
+        message: 'Please complete your profile',
+      };
+    }
+  }
+
+  /**
+   * Phone Complete Profile: Creates new user with phone OTP authentication
+   */
+  async phoneCompleteProfile(dto: PhoneCompleteProfileDto) {
+    const normalizedPhone = this.normalizePhoneNumber(dto.countryCode, dto.phone);
+
+    // Verify OTP again for security
+    // TODO: Replace with third-party OTP verification
+    if (dto.otp !== '1234') {
+      throw new UnauthorizedException('Invalid or expired OTP');
+    }
+
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { phone: normalizedPhone },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Phone number already registered');
+    }
+
+    // Check email uniqueness if provided
+    if (dto.email) {
+      const emailExists = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
+      if (emailExists) {
+        throw new ConflictException('Email already registered');
+      }
+    }
+
+    // Create new user with phone authentication
+    const newUser = await this.prisma.user.create({
+      data: {
+        phone: normalizedPhone,
+        countryCode: dto.countryCode,
+        phoneVerifiedAt: new Date(),
+        name: dto.name,
+        email: dto.email || null,
+        age: dto.age || null,
+        gender: dto.gender || null,
+        role: 'CUSTOMER',
+        isActive: true,
+        // No password for phone-only auth
+        passwordHash: null,
+      },
+    });
+
+    const tokens = await this.generateTokens(
+      newUser.id,
+      newUser.email || normalizedPhone,
+      newUser.role
+    );
+
+    return {
+      success: true,
+      ...tokens,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        phone: newUser.phone,
+        role: newUser.role,
+      },
+    };
+  }
+
+  /**
+   * Normalize phone number to E.164 format
+   * Example: +919876543210
+   */
+  private normalizePhoneNumber(countryCode: string, phone: string): string {
+    // Remove all non-digit characters from phone
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Ensure country code starts with +
+    const cleanCountryCode = countryCode.startsWith('+') 
+      ? countryCode 
+      : `+${countryCode}`;
+
+    // If phone already includes country code digits, don't duplicate
+    const countryCodeDigits = cleanCountryCode.replace(/\D/g, '');
+    if (cleanPhone.startsWith(countryCodeDigits)) {
+      return `+${cleanPhone}`;
+    }
+
+    return `${cleanCountryCode}${cleanPhone}`;
+  }
+
+  /**
+   * Basic phone number validation
+   * TODO: Use libphonenumber-js for comprehensive validation
+   */
+  private isValidPhoneNumber(phone: string): boolean {
+    // E.164 format: +[country code][number]
+    // Length should be between 8 and 15 digits (excluding +)
+    const phoneRegex = /^\+[1-9]\d{7,14}$/;
+    return phoneRegex.test(phone);
+  }
 }
+

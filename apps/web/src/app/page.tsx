@@ -30,6 +30,7 @@ const occasions = [
 
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
+import { HorizontalScrollSkeleton } from '@/components/ui/Skeleton';
 
 export default function HomePage() {
   const [showLocation, setShowLocation] = useState(false);
@@ -45,10 +46,11 @@ export default function HomePage() {
           apiClient.getProducts(),
           apiClient.getCategories()
         ]);
-        setProducts(prodData);
-        setCategories(catData);
+        setProducts(Array.isArray(prodData) ? prodData : []);
+        setCategories(Array.isArray(catData) ? catData : []);
       } catch (err) {
         console.error('Failed to load homepage data', err);
+        // Don't block — just show page with empty/fallback data
       } finally {
         setLoading(false);
       }
@@ -73,8 +75,9 @@ export default function HomePage() {
 
       <main style={{ paddingBottom: 20, width: '100%', overflow: 'hidden', background: '#FFFFFF' }}>
         
-        {/* ── LOCATION SELECTOR (Swiggy Style) ── */}
+        {/* ── LOCATION SELECTOR (Swiggy Style) - Mobile only ── */}
         <section 
+          className="mobile-location-bar"
           style={{ padding: '12px 16px', borderBottom: '1px solid #F5F5F5' }}
           onClick={() => setShowLocation(true)}
         >
@@ -90,8 +93,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── SEARCH BAR ── */}
-        <section style={{ background: '#FFFFFF', padding: '12px 16px' }}>
+        {/* ── SEARCH BAR - Mobile only ── */}
+        <section className="mobile-search-bar" style={{ background: '#FFFFFF', padding: '12px 16px' }}>
           <div style={{
             background: '#F5F5F5',
             borderRadius: 14,
@@ -123,12 +126,15 @@ export default function HomePage() {
 
         {/* ── Quick Categories ── */}
         <section style={{ background: '#FFFFFF', padding: '10px 0 24px' }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 12,
-            padding: '0 16px'
-          }}>
+          <div
+            className="desktop-category-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: 12,
+              padding: '0 16px'
+            }}
+          >
             {(categories.length > 0 ? categories.slice(0, 8) : [
               { name: 'Flowers', imageUrl: '/flowers.webp', slug: 'flowers' },
               { name: 'Cakes', imageUrl: '/cakes.webp', slug: 'cakes' },
@@ -151,10 +157,10 @@ export default function HomePage() {
 
         {/* ── Occasions ── */}
         <section style={{ background: '#FFFFFF', padding: '24px 0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 16px' }}>
-            <h2 style={{ fontSize: 17, fontWeight: 900, color: '#111111' }}>Shop by Occasion</h2>
+          <div className="section-header-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 16px' }}>
+            <h2 className="section-heading" style={{ fontSize: 17, fontWeight: 900, color: '#111111' }}>Shop by Occasion</h2>
           </div>
-          <div className="no-scrollbar" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px 12px' }}>
+          <div className="no-scrollbar occasions-row" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px 12px' }}>
             {occasions.map((occ) => (
               <Link key={occ.slug} href={`/occasion/${occ.slug}`} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: 76, textDecoration: 'none' }}>
                 <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#FFFFFF', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #F5F5F5' }}>
@@ -169,22 +175,39 @@ export default function HomePage() {
 
         {/* ── Bestsellers ── */}
         <section style={{ background: '#FFFFFF', padding: '24px 0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 16px' }}>
-            <h2 style={{ fontSize: 17, fontWeight: 900, color: '#111111' }}>Bestsellers</h2>
+          <div className="section-header-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 16px' }}>
+            <h2 className="section-heading" style={{ fontSize: 17, fontWeight: 900, color: '#111111' }}>Bestsellers</h2>
             <Link href="/shop" style={{ fontSize: 12, fontWeight: 800, color: '#b22153', textDecoration: 'none' }}>View all</Link>
           </div>
-          <div className="no-scrollbar" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px 12px' }}>
-            {bestsellers.length > 0 ? (
-              bestsellers.map((product: any) => (
-                <div key={product.id} style={{ width: 160, flexShrink: 0 }}>
+          {loading ? (
+            <HorizontalScrollSkeleton count={4} itemWidth="160px" />
+          ) : bestsellers.length > 0 ? (
+            <div className="no-scrollbar desktop-product-grid" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
+              {bestsellers.map((product: any, index: number) => (
+                <div 
+                  key={product.id} 
+                  style={{ width: 160, flexShrink: 0, marginLeft: index === 0 ? 16 : 0 }}
+                >
                   <ProductCard {...product} />
                 </div>
-              ))
-            ) : (
-              <p style={{ fontSize: 12, padding: '0 16px' }}>Loading bestsellers...</p>
-            )}
-            <div style={{ flexShrink: 0, width: 4 }} />
-          </div>
+              ))}
+              <div className="scroll-spacer" style={{ width: 16, flexShrink: 0 }} />
+            </div>
+          ) : products.length > 0 ? (
+            <div className="no-scrollbar desktop-product-grid" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
+              {products.slice(0, 6).map((product: any, index: number) => (
+                <div 
+                  key={product.id} 
+                  style={{ width: 160, flexShrink: 0, marginLeft: index === 0 ? 16 : 0 }}
+                >
+                  <ProductCard {...product} />
+                </div>
+              ))}
+              <div className="scroll-spacer" style={{ width: 16, flexShrink: 0 }} />
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, padding: '0 16px', color: '#5F5F5F' }}>No products available</p>
+          )}
         </section>
 
       </main>

@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Get, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, RefreshDto } from './dto/auth.dto';
+import { PhoneStartDto, PhoneVerifyDto, PhoneCompleteProfileDto } from './dto/phone-auth.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 
 @Controller('v1/auth')
@@ -38,5 +39,25 @@ export class AuthController {
   async me(@Req() req: any) {
     const user = await this.authService.getProfile(req.user.sub);
     return user;
+  }
+
+  // === Phone OTP Authentication Endpoints ===
+
+  @Post('phone/start')
+  @HttpCode(HttpStatus.OK)
+  phoneStart(@Body() dto: PhoneStartDto) {
+    return this.authService.phoneStart(dto);
+  }
+
+  @Post('phone/verify')
+  @HttpCode(HttpStatus.OK)
+  phoneVerify(@Body() dto: PhoneVerifyDto) {
+    return this.authService.phoneVerify(dto);
+  }
+
+  @Post('phone/complete-profile')
+  @HttpCode(HttpStatus.OK)
+  phoneCompleteProfile(@Body() dto: PhoneCompleteProfileDto) {
+    return this.authService.phoneCompleteProfile(dto);
   }
 }

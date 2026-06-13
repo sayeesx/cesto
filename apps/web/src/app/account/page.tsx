@@ -38,17 +38,34 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function AccountPage() {
-  const { user, isAuthenticated, loading, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout, openLoginModal } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push('/login?redirect=/account');
+      openLoginModal();
     }
-  }, [isAuthenticated, loading, router]);
+  }, [loading, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading || !isAuthenticated) {
-    return null;
+  if (loading) {
+    // Show skeleton instead of full-page loader so layout is visible immediately
+    return (
+      <main style={{ minHeight: '100vh', background: '#FCF9FA' }}>
+        <div style={{ 
+          background: 'linear-gradient(135deg, #b22153 0%, #d14175 100%)', 
+          padding: '40px 20px 60px',
+          textAlign: 'center',
+        }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', margin: '0 auto 16px' }} />
+          <div style={{ height: 22, width: 140, background: 'rgba(255,255,255,0.3)', borderRadius: 8, margin: '0 auto 8px' }} />
+          <div style={{ height: 14, width: 100, background: 'rgba(255,255,255,0.2)', borderRadius: 6, margin: '0 auto' }} />
+        </div>
+      </main>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Modal will show
   }
 
   const handleLogout = async () => {

@@ -1,4 +1,9 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+// In the browser, call through Next.js proxy (/api/...) to avoid CORS.
+// On the server (SSR/build), call the backend directly.
+const API_BASE =
+  typeof window !== 'undefined'
+    ? '/api'
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export type ApiError = {
   statusCode: number;
@@ -145,6 +150,50 @@ class ApiClient {
 
   async getMe() {
     return this.request('/v1/auth/me');
+  }
+
+  // --- Phone OTP Auth Methods ---
+  async phoneStart(data: { countryCode: string; phone: string }) {
+    return this.request('/v1/auth/phone/start', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async phoneVerify(data: { countryCode: string; phone: string; otp: string }) {
+    const res = await this.request('/v1/auth/phone/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+
+    // If user exists and logged in, store tokens
+    if (res.userExists && res.access_token) {
+      this.setTokens({ access_token: res.access_token, refresh_token: res.refresh_token }, res.user.id);
+    }
+
+    return res;
+  }
+
+  async phoneCompleteProfile(data: { 
+    countryCode: string; 
+    phone: string; 
+    otp: string; 
+    name: string;
+    email?: string;
+    age?: number;
+    gender?: string;
+  }) {
+    const res = await this.request('/v1/auth/phone/complete-profile', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+
+    // Store tokens after successful profile creation
+    if (res.access_token) {
+      this.setTokens({ access_token: res.access_token, refresh_token: res.refresh_token }, res.user.id);
+    }
+
+    return res;
   }
 
   // --- Catalog Methods ---

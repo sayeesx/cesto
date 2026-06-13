@@ -8,10 +8,14 @@ datasource db {
 
 model User {
   id              String           @id @default(uuid())
-  email           String           @unique
+  email           String?          @unique
   phone           String?          @unique
-  passwordHash    String
+  countryCode     String?
+  phoneVerifiedAt DateTime?
+  passwordHash    String?
   name            String?
+  age             Int?
+  gender          Gender?
   role            Role             @default(CUSTOMER)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -464,6 +468,13 @@ enum Role {
   DELIVERY_PARTNER
   SUPPORT
   CUSTOMER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
 }
 
 enum OrderStatus {

@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+// Simple spinner for buttons
 const Loader = ({ color = '#b22153', size = 20 }: { color?: string; size?: number }) => {
   return (
     <>

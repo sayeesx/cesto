@@ -60,7 +60,12 @@ export default function HomePage() {
       try {
         const prodData = await apiClient.getProducts();
         clearTimeout(timer);
-        const arr = Array.isArray(prodData) ? prodData : [];
+        const raw = Array.isArray(prodData) ? prodData : [];
+        // Map images[] → imageUrl so ProductCard gets the right prop
+        const arr = raw.map((p: any) => ({
+          ...p,
+          imageUrl: p.imageUrl || p.images?.[0]?.url || null,
+        }));
         _productCache = { data: arr, ts: Date.now() };
         setProducts(arr);
       } catch (err) {
@@ -209,7 +214,7 @@ export default function HomePage() {
 
             {/* father.webp — full image, no crop */}
             <div style={{
-              width: 140,
+              width: 165,
               flexShrink: 0,
               display: 'flex',
               alignItems: 'flex-end',
@@ -223,7 +228,7 @@ export default function HomePage() {
                   height: 'auto',
                   display: 'block',
                   objectFit: 'contain',
-                  maxHeight: 200,
+                  maxHeight: 220,
                 }}
               />
             </div>

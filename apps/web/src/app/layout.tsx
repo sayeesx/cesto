@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/layout/BottomNav";
+import PageTransitionBar from "@/components/ui/PageTransitionBar";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -61,6 +62,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={archivo.variable}>
+      <head>
+        {/* Preload lottie so it's ready instantly when success screen shows */}
+        <link rel="preload" href="/lottie/success.lottie" as="fetch" crossOrigin="anonymous" />
+      </head>
       <body style={{ 
         fontFamily: 'var(--font-archivo), sans-serif',
         minHeight: '100dvh',
@@ -68,6 +73,8 @@ export default function RootLayout({
         flexDirection: 'column'
       }}>
         <AuthProvider>
+          {/* Global page navigation progress bar */}
+          <PageTransitionBar />
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             {children}
           </div>

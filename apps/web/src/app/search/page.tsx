@@ -50,7 +50,12 @@ function SearchContent() {
     }
     apiClient.getProducts()
       .then((data: any) => {
-        const arr = Array.isArray(data) ? data : [];
+        const raw = Array.isArray(data) ? data : [];
+        // Map images[] → imageUrl so ProductCard gets the right prop
+        const arr = raw.map((p: any) => ({
+          ...p,
+          imageUrl: p.imageUrl || p.images?.[0]?.url || null,
+        }));
         _searchProductCache = { data: arr, ts: Date.now() };
         setAllProducts(arr);
       })

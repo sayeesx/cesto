@@ -11,6 +11,7 @@ import {
   BsX,
   BsCrosshair,
 } from 'react-icons/bs';
+import { showNavBar } from '@/components/ui/PageTransitionBar';
 
 interface MobileHomeHeaderProps {
   cartCount?: number;
@@ -20,7 +21,7 @@ export default function MobileHomeHeader({ cartCount = 0 }: MobileHomeHeaderProp
   const [showLocation, setShowLocation] = useState(false);
   const router = useRouter();
 
-  const goToSearch = () => router.push('/search');
+  const goToSearch = () => { showNavBar(); router.push('/search'); };
 
   return (
     <>

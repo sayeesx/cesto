@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BsBag, BsSearch, BsGeoAlt, BsChevronDown } from 'react-icons/bs';
+import { showNavBar } from '@/components/ui/PageTransitionBar';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -15,7 +16,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const goToSearch = () => router.push('/search');
+  const goToSearch = () => { showNavBar(); router.push('/search'); };
 
   return (
     <header

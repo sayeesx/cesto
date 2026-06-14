@@ -37,9 +37,15 @@ export default function ShopPage() {
         const res = await fetch('/api/v1/products');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            cachedProducts = data;
-            setProducts(data);
+          const raw = Array.isArray(data) ? data : [];
+          if (raw.length > 0) {
+            // Map images[] → imageUrl so ProductCard gets the right prop
+            const mapped = raw.map((p: any) => ({
+              ...p,
+              imageUrl: p.imageUrl || p.images?.[0]?.url || null,
+            }));
+            cachedProducts = mapped;
+            setProducts(mapped);
           }
         }
       } catch {

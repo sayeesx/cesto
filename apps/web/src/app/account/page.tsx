@@ -48,19 +48,22 @@ export default function AccountPage() {
   }, [loading, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
-    // Show skeleton instead of full-page loader so layout is visible immediately
     return (
-      <main style={{ minHeight: '100vh', background: '#FCF9FA' }}>
-        <div style={{ 
-          background: 'linear-gradient(135deg, #b22153 0%, #d14175 100%)', 
-          padding: '40px 20px 60px',
-          textAlign: 'center',
-        }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', margin: '0 auto 16px' }} />
-          <div style={{ height: 22, width: 140, background: 'rgba(255,255,255,0.3)', borderRadius: 8, margin: '0 auto 8px' }} />
-          <div style={{ height: 14, width: 100, background: 'rgba(255,255,255,0.2)', borderRadius: 6, margin: '0 auto' }} />
-        </div>
-      </main>
+      <>
+        <Header />
+        <main style={{ minHeight: '100vh', background: '#FCF9FA' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #b22153 0%, #d14175 100%)', 
+            padding: '40px 20px 60px',
+            textAlign: 'center',
+          }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', margin: '0 auto 16px' }} />
+            <div style={{ height: 22, width: 140, background: 'rgba(255,255,255,0.3)', borderRadius: 8, margin: '0 auto 8px' }} />
+            <div style={{ height: 14, width: 100, background: 'rgba(255,255,255,0.2)', borderRadius: 6, margin: '0 auto' }} />
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -83,14 +86,16 @@ export default function AccountPage() {
 
   return (
     <>
-      <main style={{ minHeight: '100vh', background: '#FCF9FA', paddingBottom: 100 }}>
+      <Header />
+      <main className="account-page-main" style={{ minHeight: '100vh', background: '#FCF9FA', paddingBottom: 100 }}>
         
         {/* Profile Header */}
-        <div style={{ 
+        <div className="account-profile-header" style={{ 
           background: 'linear-gradient(135deg, #b22153 0%, #d14175 100%)', 
           padding: '40px 20px 60px', 
           textAlign: 'center',
-          color: 'white'
+          color: 'white',
+          width: '100%',
         }}>
           <div style={{ 
             width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.2)',
@@ -104,7 +109,7 @@ export default function AccountPage() {
         </div>
 
         {/* Account Menu */}
-        <div style={{ maxWidth: 600, margin: '-24px auto 0', padding: '0 16px' }}>
+        <div className="account-menu-container" style={{ maxWidth: 600, margin: '-24px auto 0', padding: '0 16px' }}>
           <div style={{ background: 'white', borderRadius: 20, boxShadow: '0 8px 32px rgba(178, 33, 83, 0.05)', overflow: 'hidden' }}>
             {displayMenuItems.map((group, gIdx) => (
               <div key={group.group} style={{ borderBottom: gIdx < displayMenuItems.length - 1 ? '8px solid #FCF9FA' : 'none' }}>
@@ -136,13 +141,15 @@ export default function AccountPage() {
             style={{
               width: '100%', marginTop: 24, padding: '18px', background: 'white', borderRadius: 20,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              color: '#EF4444', fontWeight: 800, fontSize: 14, border: '1px solid #FEE2E2'
+              color: '#EF4444', fontWeight: 800, fontSize: 14, border: '1px solid #FEE2E2',
+              cursor: 'pointer',
             }}
           >
             <BsBoxArrowRight size={18} /> Logout
           </button>
         </div>
       </main>
+      <Footer />
     </>
   );
 }

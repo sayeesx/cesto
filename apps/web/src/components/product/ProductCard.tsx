@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BsHeart, BsPlus, BsLightningChargeFill, BsTruck, BsGift } from 'react-icons/bs';
+import { BsPlus, BsGift } from 'react-icons/bs';
 import ProductModal, { ProductModalData } from './ProductModal';
 
 interface ProductCardProps {
@@ -15,31 +15,73 @@ interface ProductCardProps {
   isBestseller?: boolean;
   isNew?: boolean;
   description?: string;
-  tint?: 'pink' | 'blue';
+  tint?: 'pink' | 'blue'; // kept for API compat but unused in styling
+  skeleton?: boolean;      // when true, renders a shimmer placeholder in the same card shape
+}
+
+const BRAND = '#b22153';
+
+// ─── Skeleton placeholder — same exact shape as a real card ───────────────
+function SkeletonCard() {
+  return (
+    <div style={{
+      background: '#FFFFFF',
+      borderRadius: 16,
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      height: '100%',
+      border: '1px solid #F0EAEE',
+    }}>
+      {/* image area */}
+      <div style={{
+        width: '100%', paddingBottom: '72%',
+        background: 'linear-gradient(90deg,#f3eef1 25%,#ede6eb 50%,#f3eef1 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.4s ease-in-out infinite',
+        flexShrink: 0,
+      }} />
+      {/* info area */}
+      <div style={{ padding: '10px 10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ height: 13, width: '85%', borderRadius: 6, background: 'linear-gradient(90deg,#f3eef1 25%,#ede6eb 50%,#f3eef1 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s ease-in-out infinite' }} />
+        <div style={{ height: 13, width: '60%', borderRadius: 6, background: 'linear-gradient(90deg,#f3eef1 25%,#ede6eb 50%,#f3eef1 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s ease-in-out infinite' }} />
+        <div style={{ height: 11, width: '45%', borderRadius: 6, background: 'linear-gradient(90deg,#f3eef1 25%,#ede6eb 50%,#f3eef1 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s ease-in-out infinite', marginTop: 2 }} />
+        <div style={{ flex: 1 }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+          <div style={{ height: 16, width: '40%', borderRadius: 6, background: 'linear-gradient(90deg,#f3eef1 25%,#ede6eb 50%,#f3eef1 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s ease-in-out infinite' }} />
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(90deg,#f3eef1 25%,#ede6eb 50%,#f3eef1 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s ease-in-out infinite' }} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ProductCard(props: ProductCardProps) {
-  const { name, slug, price, compareAtPrice, deliveryEstimate, imageUrl, isBestseller, isNew, description, tint = 'pink' } = props;
+  const {
+    name, slug, price, compareAtPrice,
+    deliveryEstimate, imageUrl,
+    isBestseller, isNew, description,
+    skeleton = false,
+  } = props;
+
   const [modalOpen, setModalOpen] = useState(false);
+
+  if (skeleton) return <SkeletonCard />;
 
   const discount = compareAtPrice && compareAtPrice > price
     ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
     : 0;
 
-  const isSameDay = deliveryEstimate?.toLowerCase().includes('same') || deliveryEstimate?.toLowerCase().includes('hour');
-
-  const imgBg = tint === 'blue'
-    ? 'linear-gradient(135deg, #DBEAFE, #EFF6FF)'
-    : 'linear-gradient(135deg, #FBE0EB, #F8EDF4)';
-  const imgBgSolid = tint === 'blue' ? '#EFF6FF' : '#FCF7F8';
-  const accentColor = tint === 'blue' ? '#2563EB' : '#b22153';
-  const badgeBg = tint === 'blue' ? 'linear-gradient(135deg, #2563EB, #3B82F6)' : 'linear-gradient(135deg, #b22153, #d14175)';
-  const topBadgeBg = tint === 'blue' ? 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' : 'linear-gradient(135deg, #F9EBF2, #FCF1F6)';
-  const topBadgeColor = tint === 'blue' ? '#2563EB' : '#b22153';
+  const badgeLabel = discount > 0 ? `${discount}% OFF`
+    : isBestseller ? 'TOP'
+    : isNew ? 'NEW'
+    : null;
 
   const modalData: ProductModalData = {
     id: props.id || slug,
-    name, slug, price, compareAtPrice, deliveryEstimate, imageUrl, isBestseller, isNew, description,
+    name, slug, price, compareAtPrice,
+    deliveryEstimate, imageUrl, isBestseller, isNew, description,
   };
 
   return (
@@ -48,130 +90,125 @@ export default function ProductCard(props: ProductCardProps) {
         onClick={() => setModalOpen(true)}
         style={{
           background: '#FFFFFF',
-          borderRadius: 14,
+          borderRadius: 16,
           overflow: 'hidden',
-          border: tint === 'blue' ? '1px solid #EAEAEA' : '1px solid rgba(198,172,192,0.15)',
           display: 'flex',
           flexDirection: 'column',
-          color: 'inherit',
-          position: 'relative',
-          boxShadow: 'none',
-          transition: 'all 0.25s ease',
+          // width and height are controlled entirely by the parent wrapper (160px wide, stretch height)
+          width: '100%',
+          height: '100%',
           cursor: 'pointer',
+          position: 'relative',
+          border: '1px solid #F0EAEE',
+          WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none',
         }}
       >
-        {/* Image */}
+        {/* ── Image — fixed aspect ratio ── */}
         <div style={{
           position: 'relative',
-          aspectRatio: '1',
+          width: '100%',
+          paddingBottom: '72%',
+          background: '#F9F4F6',
+          flexShrink: 0,
           overflow: 'hidden',
-          background: imgBgSolid,
         }}>
           {imageUrl ? (
-            <img src={imageUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img
+              src={imageUrl}
+              alt={name}
+              loading="lazy"
+              style={{
+                position: 'absolute', inset: 0,
+                width: '100%', height: '100%',
+                objectFit: 'contain',
+                padding: '8%',
+                boxSizing: 'border-box',
+              }}
+            />
           ) : (
             <div style={{
-              width: '100%', height: '100%',
+              position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 36,
-              color: tint === 'blue' ? '#93C5FD' : '#E0CBE8',
-              background: imgBg,
+              color: '#D4C7CF', fontSize: 36,
             }}>
               <BsGift />
             </div>
           )}
 
-          {/* Badge */}
-          {discount > 0 && (
+          {badgeLabel && (
             <span style={{
               position: 'absolute', top: 8, left: 8,
-              background: badgeBg,
-              color: 'white', fontSize: 9, fontWeight: 800,
-              padding: '2px 8px', borderRadius: 999,
-              textTransform: 'uppercase', letterSpacing: '0.5px',
-            }}>{discount}% OFF</span>
+              background: BRAND, color: 'white',
+              fontSize: 9, fontWeight: 800,
+              padding: '3px 8px', borderRadius: 999,
+              letterSpacing: '0.4px', textTransform: 'uppercase',
+            }}>
+              {badgeLabel}
+            </span>
           )}
-          {isBestseller && !discount && (
-            <span style={{
-              position: 'absolute', top: 8, left: 8,
-              background: topBadgeBg,
-              color: topBadgeColor, fontSize: 9, fontWeight: 800,
-              padding: '2px 8px', borderRadius: 999,
-              textTransform: 'uppercase', letterSpacing: '0.5px',
-            }}>TOP</span>
-          )}
-          {isNew && !discount && !isBestseller && (
-            <span style={{
-              position: 'absolute', top: 8, left: 8,
-              background: badgeBg,
-              color: 'white', fontSize: 9, fontWeight: 800,
-              padding: '2px 8px', borderRadius: 999,
-              textTransform: 'uppercase', letterSpacing: '0.5px',
-            }}>NEW</span>
-          )}
-
-          {/* Wishlist */}
-          <button
-            style={{
-              position: 'absolute', top: 8, right: 8,
-              width: 28, height: 28,
-              background: 'rgba(255,255,255,0.9)',
-              border: '1px solid rgba(198,172,192,0.2)',
-              borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#BEB4C4', cursor: 'pointer',
-              transition: 'color 0.2s ease', zIndex: 5,
-            }}
-            aria-label="Add to wishlist"
-            onClick={(e) => { e.stopPropagation(); }}
-          >
-            <BsHeart size={12} />
-          </button>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: '10px 10px 12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        {/* ── Info ── */}
+        <div style={{
+          padding: '10px 10px 12px',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+        }}>
+          {/* Name — always exactly 2 lines so all cards align */}
           <h3 style={{
-            fontSize: 12, fontWeight: 600, color: '#171717',
-            lineHeight: 1.35, marginBottom: 4, height: 32,
-            overflow: 'hidden', display: '-webkit-box',
-            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
+            fontSize: 13, fontWeight: 800, color: '#111111',
+            lineHeight: 1.3, margin: '0 0 2px',
+            height: '2.6em',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical' as const,
           }}>
             {name}
           </h3>
 
-          {deliveryEstimate && (
-            <div style={{
-              fontSize: 10, fontWeight: 700,
-              display: 'flex', alignItems: 'center', gap: 3,
-              marginBottom: 6,
-              color: isSameDay ? '#65a30d' : '#5F5F5F',
-            }}>
-              {isSameDay ? <BsLightningChargeFill size={10} /> : <BsTruck size={10} />}
-              {isSameDay ? 'Same Day' : deliveryEstimate}
-            </div>
-          )}
+          {/* Subtitle — always one line tall */}
+          <p style={{
+            fontSize: 11, fontWeight: 500, color: '#B0A8B0',
+            margin: 0, lineHeight: 1.3,
+            overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+            minHeight: '1.3em',
+          }}>
+            {deliveryEstimate || ''}
+          </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', gap: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 900, color: '#111111' }}>₹{price.toLocaleString('en-IN')}</span>
+          {/* Push price row to bottom */}
+          <div style={{ flex: 1, minHeight: 4 }} />
+
+          {/* Price + Add button */}
+          <div style={{
+            display: 'flex', alignItems: 'flex-end',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {compareAtPrice && compareAtPrice > price && (
-                <span style={{ fontSize: 10, color: '#BEB4C4', textDecoration: 'line-through' }}>₹{compareAtPrice.toLocaleString('en-IN')}</span>
+                <span style={{ fontSize: 10, color: '#C4BAC2', textDecoration: 'line-through', fontWeight: 500, lineHeight: 1 }}>
+                  ₹{compareAtPrice.toLocaleString('en-IN')}
+                </span>
               )}
+              <span style={{ fontSize: 16, fontWeight: 900, color: '#111111', letterSpacing: '-0.3px', lineHeight: 1 }}>
+                ₹{price.toLocaleString('en-IN')}
+              </span>
             </div>
+
             <button
-              style={{
-                width: 28, height: 28, borderRadius: '50%',
-                background: accentColor,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', flexShrink: 0, cursor: 'pointer',
-                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                border: 'none', boxShadow: 'none',
-              }}
-              aria-label="Add to cart"
               onClick={(e) => { e.stopPropagation(); setModalOpen(true); }}
+              aria-label="Add to cart"
+              style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: BRAND, border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', cursor: 'pointer', flexShrink: 0,
+              }}
             >
-              <BsPlus size={16} />
+              <BsPlus size={20} />
             </button>
           </div>
         </div>

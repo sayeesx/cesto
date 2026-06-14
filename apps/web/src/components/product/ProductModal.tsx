@@ -39,9 +39,11 @@ const messageOptions = [
 ];
 
 import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ProductModal({ product, onClose }: ProductModalProps) {
   const router = useRouter();
+  const { isAuthenticated, openLoginModal } = useAuth();
   const [qty, setQty] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
   const [selectedCustom, setSelectedCustom] = useState<string[]>([]);
@@ -91,18 +93,28 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
   };
 
   const handleAddToBag = async () => {
+    // Gate: must be logged in
+    if (!isAuthenticated) {
+      openLoginModal(() => {
+        // After login, automatically add to cart
+        handleAddToBagAuthed();
+      });
+      return;
+    }
+    handleAddToBagAuthed();
+  };
+
+  const handleAddToBagAuthed = async () => {
     setLoadingBtn(true);
     try {
-      // Use product.id (UUID) instead of slug if ID is available
-      const productId = product.id; 
-      await apiClient.addToCart(productId, qty);
+      await apiClient.addToCart(product!.id, qty);
       handleClose();
       router.push('/cart');
     } catch (err: any) {
       console.error('Failed to add to cart', err);
-      // If unauthorized, redirect to login or show alert
       if (err.statusCode === 401) {
-        router.push('/login');
+        // Token expired mid-session — show login modal
+        openLoginModal();
       } else {
         alert(err.message || 'Could not add item to bag.');
       }

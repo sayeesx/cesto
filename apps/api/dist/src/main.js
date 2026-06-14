@@ -41,12 +41,14 @@ const common_1 = require("@nestjs/common");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.setGlobalPrefix('api');
-    const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
-        .split(',')
-        .map((o) => o.trim());
+    const corsOrigins = process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+        : true;
     app.enableCors({
         origin: corsOrigins,
         credentials: true,
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

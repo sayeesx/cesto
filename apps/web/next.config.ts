@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: any = {
+const nextConfig: NextConfig = {
   compiler: {
     styledComponents: true,
   },
@@ -12,7 +12,7 @@ const nextConfig: any = {
   },
   async rewrites() {
     // In production: NEXT_PUBLIC_API_URL = https://your-api.railway.app/api
-    // In development: http://localhost:4000/api
+    // In development: http://localhost:4000/api (or LAN IP if set)
     const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
     return [
       {

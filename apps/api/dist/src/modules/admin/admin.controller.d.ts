@@ -1,7 +1,13 @@
 import { AdminService } from './admin.service';
+import { AdminProductsService } from './admin-products.service';
+import { AdminCategoriesService } from './admin-categories.service';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 export declare class AdminController {
     private readonly adminService;
-    constructor(adminService: AdminService);
+    private readonly adminProductsService;
+    private readonly adminCategoriesService;
+    constructor(adminService: AdminService, adminProductsService: AdminProductsService, adminCategoriesService: AdminCategoriesService);
     getDashboardStats(): Promise<{
         totalOrders: number;
         pendingOrders: number;
@@ -122,4 +128,269 @@ export declare class AdminController {
         ipAddress: string | null;
         userAgent: string | null;
     })[]>;
+    listProducts(page?: string, limit?: string, search?: string): Promise<{
+        products: {
+            imageUrl: string | null;
+            categoryNames: string[];
+            occasionNames: string[];
+            categories: ({
+                category: {
+                    id: string;
+                    name: string;
+                    slug: string;
+                };
+            } & {
+                productId: string;
+                categoryId: string;
+            })[];
+            images: {
+                url: string;
+                id: string;
+                productId: string;
+                isPrimary: boolean;
+                order: number;
+            }[];
+            occasions: ({
+                occasion: {
+                    id: string;
+                    name: string;
+                    slug: string;
+                };
+            } & {
+                productId: string;
+                occasionId: string;
+            })[];
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            slug: string;
+            description: string | null;
+            whatsInside: string | null;
+            price: number;
+            compareAtPrice: number | null;
+            stock: number;
+            deliveryEstimate: string | null;
+            sameDayAvailable: boolean;
+            isPersonalizable: boolean;
+            tags: string[];
+            reservedStock: number;
+        }[];
+        total: number;
+        page: number;
+        totalPages: number;
+    }>;
+    getProduct(id: string): Promise<{
+        categories: ({
+            category: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                slug: string;
+                description: string | null;
+                imageUrl: string | null;
+            };
+        } & {
+            productId: string;
+            categoryId: string;
+        })[];
+        images: {
+            url: string;
+            id: string;
+            productId: string;
+            isPrimary: boolean;
+            order: number;
+        }[];
+        occasions: ({
+            occasion: {
+                id: string;
+                name: string;
+                isActive: boolean;
+                slug: string;
+                imageUrl: string | null;
+            };
+        } & {
+            productId: string;
+            occasionId: string;
+        })[];
+    } & {
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        slug: string;
+        description: string | null;
+        whatsInside: string | null;
+        price: number;
+        compareAtPrice: number | null;
+        stock: number;
+        deliveryEstimate: string | null;
+        sameDayAvailable: boolean;
+        isPersonalizable: boolean;
+        tags: string[];
+        reservedStock: number;
+    }>;
+    createProduct(dto: CreateProductDto, req: any): Promise<{
+        categories: ({
+            category: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                slug: string;
+                description: string | null;
+                imageUrl: string | null;
+            };
+        } & {
+            productId: string;
+            categoryId: string;
+        })[];
+        images: {
+            url: string;
+            id: string;
+            productId: string;
+            isPrimary: boolean;
+            order: number;
+        }[];
+        occasions: ({
+            occasion: {
+                id: string;
+                name: string;
+                isActive: boolean;
+                slug: string;
+                imageUrl: string | null;
+            };
+        } & {
+            productId: string;
+            occasionId: string;
+        })[];
+    } & {
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        slug: string;
+        description: string | null;
+        whatsInside: string | null;
+        price: number;
+        compareAtPrice: number | null;
+        stock: number;
+        deliveryEstimate: string | null;
+        sameDayAvailable: boolean;
+        isPersonalizable: boolean;
+        tags: string[];
+        reservedStock: number;
+    }>;
+    updateProduct(id: string, dto: UpdateProductDto, req: any): Promise<({
+        categories: ({
+            category: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                slug: string;
+                description: string | null;
+                imageUrl: string | null;
+            };
+        } & {
+            productId: string;
+            categoryId: string;
+        })[];
+        images: {
+            url: string;
+            id: string;
+            productId: string;
+            isPrimary: boolean;
+            order: number;
+        }[];
+        occasions: ({
+            occasion: {
+                id: string;
+                name: string;
+                isActive: boolean;
+                slug: string;
+                imageUrl: string | null;
+            };
+        } & {
+            productId: string;
+            occasionId: string;
+        })[];
+    } & {
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        slug: string;
+        description: string | null;
+        whatsInside: string | null;
+        price: number;
+        compareAtPrice: number | null;
+        stock: number;
+        deliveryEstimate: string | null;
+        sameDayAvailable: boolean;
+        isPersonalizable: boolean;
+        tags: string[];
+        reservedStock: number;
+    }) | null>;
+    deleteProduct(id: string, req: any): Promise<{
+        success: boolean;
+    }>;
+    listCategories(): Promise<{
+        categories: ({
+            _count: {
+                products: number;
+            };
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            slug: string;
+            description: string | null;
+            imageUrl: string | null;
+        })[];
+        occasions: ({
+            _count: {
+                products: number;
+            };
+        } & {
+            id: string;
+            name: string;
+            isActive: boolean;
+            slug: string;
+            imageUrl: string | null;
+        })[];
+    }>;
+    createCategory(dto: CreateCategoryDto, req: any): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        slug: string;
+        description: string | null;
+        imageUrl: string | null;
+    }>;
+    updateCategory(id: string, dto: UpdateCategoryDto, req: any): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        slug: string;
+        description: string | null;
+        imageUrl: string | null;
+    }>;
+    deleteCategory(id: string, req: any): Promise<{
+        success: boolean;
+    }>;
 }

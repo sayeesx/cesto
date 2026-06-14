@@ -11,34 +11,56 @@ export type ApiError = {
   error?: string;
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Storage key sets
+// Customer session  → cesto_access_token / cesto_refresh_token / cesto_user_id
+// Admin session     → cesto_admin_access_token / cesto_admin_refresh_token / cesto_admin_user_id
+// They are completely independent — admin login never touches customer tokens.
+// ─────────────────────────────────────────────────────────────────────────────
+const CUSTOMER_KEYS = {
+  access:  'cesto_access_token',
+  refresh: 'cesto_refresh_token',
+  userId:  'cesto_user_id',
+} as const;
+
+const ADMIN_KEYS = {
+  access:  'cesto_admin_access_token',
+  refresh: 'cesto_admin_refresh_token',
+  userId:  'cesto_admin_user_id',
+} as const;
+
+type KeySet = typeof CUSTOMER_KEYS | typeof ADMIN_KEYS;
+
 class ApiClient {
   private baseUrl: string;
+  private keys: KeySet;
 
-  constructor(baseUrl: string) {
+  constructor(baseUrl: string, keys: KeySet = CUSTOMER_KEYS) {
     this.baseUrl = baseUrl;
+    this.keys = keys;
   }
 
   private getTokens() {
     if (typeof window === 'undefined') return null;
     return {
-      accessToken: localStorage.getItem('cesto_access_token'),
-      refreshToken: localStorage.getItem('cesto_refresh_token'),
-      userId: localStorage.getItem('cesto_user_id'),
+      accessToken:  localStorage.getItem(this.keys.access),
+      refreshToken: localStorage.getItem(this.keys.refresh),
+      userId:       localStorage.getItem(this.keys.userId),
     };
   }
 
   private setTokens(tokens: { access_token: string; refresh_token: string }, userId?: string) {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('cesto_access_token', tokens.access_token);
-    localStorage.setItem('cesto_refresh_token', tokens.refresh_token);
-    if (userId) localStorage.setItem('cesto_user_id', userId);
+    localStorage.setItem(this.keys.access,  tokens.access_token);
+    localStorage.setItem(this.keys.refresh, tokens.refresh_token);
+    if (userId) localStorage.setItem(this.keys.userId, userId);
   }
 
-  private clearTokens() {
+  clearTokens() {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem('cesto_access_token');
-    localStorage.removeItem('cesto_refresh_token');
-    localStorage.removeItem('cesto_user_id');
+    localStorage.removeItem(this.keys.access);
+    localStorage.removeItem(this.keys.refresh);
+    localStorage.removeItem(this.keys.userId);
   }
 
   async request<T = any>(
@@ -64,7 +86,6 @@ class ApiClient {
     if (response.status === 401 && tokens?.refreshToken && tokens?.userId && !skipAuth) {
       const refreshedTokens = await this.refreshToken(tokens.refreshToken, tokens.userId);
       if (refreshedTokens) {
-        // Retry with new token
         headers['Authorization'] = `Bearer ${refreshedTokens.access_token}`;
         response = await fetch(url, { ...options, headers });
       }
@@ -99,7 +120,7 @@ class ApiClient {
     } catch (e) {
       console.error('Failed to refresh token', e);
     }
-    
+
     this.clearTokens();
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('cesto_unauthorized'));
@@ -107,14 +128,14 @@ class ApiClient {
     return null;
   }
 
-  // --- Auth Methods ---
+  // ── Auth ──────────────────────────────────────────────────────────────────
+
   async login(data: any) {
     const res = await this.request('/v1/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     }, true);
 
-    // Fetch user profile to get the ID
     const user = await this.request('/v1/auth/me', {
       headers: { 'Authorization': `Bearer ${res.access_token}` }
     }, true);
@@ -124,13 +145,10 @@ class ApiClient {
   }
 
   async register(data: any) {
-    const res = await this.request('/v1/auth/register', {
+    return this.request('/v1/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     }, true);
-    
-    // Auto-login or just return
-    return res;
   }
 
   async logout() {
@@ -152,7 +170,8 @@ class ApiClient {
     return this.request('/v1/auth/me');
   }
 
-  // --- Phone OTP Auth Methods ---
+  // ── Phone OTP ─────────────────────────────────────────────────────────────
+
   async phoneStart(data: { countryCode: string; phone: string }) {
     return this.request('/v1/auth/phone/start', {
       method: 'POST',
@@ -166,18 +185,17 @@ class ApiClient {
       body: JSON.stringify(data),
     }, true);
 
-    // If user exists and logged in, store tokens
-    if (res.userExists && res.access_token) {
-      this.setTokens({ access_token: res.access_token, refresh_token: res.refresh_token }, res.user.id);
+    if (res.access_token) {
+      this.setTokens({ access_token: res.access_token, refresh_token: res.refresh_token }, res.user?.id);
     }
 
     return res;
   }
 
-  async phoneCompleteProfile(data: { 
-    countryCode: string; 
-    phone: string; 
-    otp: string; 
+  async phoneCompleteProfile(data: {
+    countryCode: string;
+    phone: string;
+    otp: string;
     name: string;
     email?: string;
     age?: number;
@@ -188,7 +206,6 @@ class ApiClient {
       body: JSON.stringify(data),
     }, true);
 
-    // Store tokens after successful profile creation
     if (res.access_token) {
       this.setTokens({ access_token: res.access_token, refresh_token: res.refresh_token }, res.user.id);
     }
@@ -196,7 +213,8 @@ class ApiClient {
     return res;
   }
 
-  // --- Catalog Methods ---
+  // ── Catalog ───────────────────────────────────────────────────────────────
+
   async getProducts(params?: Record<string, string>) {
     const qs = params ? '?' + new URLSearchParams(params).toString() : '';
     return this.request(`/v1/products${qs}`);
@@ -210,7 +228,8 @@ class ApiClient {
     return this.request('/v1/categories');
   }
 
-  // --- Cart & Checkout ---
+  // ── Cart & Checkout ───────────────────────────────────────────────────────
+
   async getCart() {
     const tokens = this.getTokens();
     const qs = tokens?.userId ? `?userId=${tokens.userId}` : '';
@@ -248,10 +267,65 @@ class ApiClient {
     return this.request(`/v1/orders/${orderId}`);
   }
 
-  // --- Admin ---
+  // ── Admin ─────────────────────────────────────────────────────────────────
+
   async getAdminDashboard() {
     return this.request('/v1/admin/dashboard');
   }
+
+  async adminListProducts(page = 1, search = '') {
+    const qs = new URLSearchParams({ page: String(page), limit: '20', ...(search ? { search } : {}) });
+    return this.request(`/v1/admin/products?${qs}`);
+  }
+
+  async adminGetProduct(id: string) {
+    return this.request(`/v1/admin/products/${id}`);
+  }
+
+  async adminCreateProduct(data: any) {
+    return this.request('/v1/admin/products', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async adminUpdateProduct(id: string, data: any) {
+    return this.request(`/v1/admin/products/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async adminDeleteProduct(id: string) {
+    return this.request(`/v1/admin/products/${id}`, { method: 'DELETE' });
+  }
+
+  async adminListCategories() {
+    return this.request('/v1/admin/categories');
+  }
+
+  async adminCreateCategory(data: any) {
+    return this.request('/v1/admin/categories', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async adminUpdateCategory(id: string, data: any) {
+    return this.request(`/v1/admin/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async adminDeleteCategory(id: string) {
+    return this.request(`/v1/admin/categories/${id}`, { method: 'DELETE' });
+  }
+
+  async getCloudinarySignature(folder = 'cesto/products') {
+    return this.request('/v1/uploads/cloudinary-sign', { method: 'POST', body: JSON.stringify({ folder }) });
+  }
+
+  async adminGetOrders(status?: string, page = 1) {
+    const qs = new URLSearchParams({ page: String(page), ...(status ? { status } : {}) });
+    return this.request(`/v1/admin/orders?${qs}`);
+  }
+
+  async adminUpdateOrderStatus(id: string, status: string) {
+    return this.request(`/v1/admin/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  }
 }
 
-export const apiClient = new ApiClient(API_BASE);
+// Customer-facing client — uses cesto_access_token / cesto_refresh_token / cesto_user_id
+export const apiClient = new ApiClient(API_BASE, CUSTOMER_KEYS);
+
+// Admin-only client — uses cesto_admin_* keys, never touches customer tokens
+export const adminApiClient = new ApiClient(API_BASE, ADMIN_KEYS);

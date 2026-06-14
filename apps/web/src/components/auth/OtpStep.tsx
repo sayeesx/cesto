@@ -7,9 +7,10 @@ interface OtpStepProps {
   countryCode: string;
   phone: string;
   onVerified: (requiresProfile: boolean) => void;
+  onFailed?: () => void;
 }
 
-export default function OtpStep({ countryCode, phone, onVerified }: OtpStepProps) {
+export default function OtpStep({ countryCode, phone, onVerified, onFailed }: OtpStepProps) {
   const [otp, setOtp] = useState(['', '', '', '']);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -107,9 +108,13 @@ export default function OtpStep({ countryCode, phone, onVerified }: OtpStepProps
         onVerified(true);
       }
     } catch (err: any) {
-      setError(err.message || 'Invalid OTP. Please try again.');
-      setOtp(['', '', '', '']);
-      inputRefs[0].current?.focus();
+      if (onFailed) {
+        onFailed();
+      } else {
+        setError(err.message || 'Invalid OTP. Please try again.');
+        setOtp(['', '', '', '']);
+        inputRefs[0].current?.focus();
+      }
     } finally {
       setLoading(false);
     }

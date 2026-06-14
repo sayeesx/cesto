@@ -11,14 +11,16 @@ async function bootstrap() {
   // Global API prefix
   app.setGlobalPrefix('api');
 
-  // CORS — allow configured origin(s)
-  const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
-    .split(',')
-    .map((o) => o.trim());
+  // CORS — allow configured origin(s) or all in development
+  const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : true; // allow all origins when CORS_ORIGIN not set (local dev)
 
   app.enableCors({
     origin: corsOrigins,
     credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   // Global validation pipe

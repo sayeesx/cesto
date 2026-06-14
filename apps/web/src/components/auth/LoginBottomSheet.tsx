@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { BsX, BsArrowLeft } from 'react-icons/bs';
+import { BsX, BsArrowLeft, BsExclamationCircleFill } from 'react-icons/bs';
 import PhoneNumberStep from './PhoneNumberStep';
 import OtpStep from './OtpStep';
 import CompleteProfileStep from './CompleteProfileStep';
+import { DotLottiePlayer } from '@dotlottie/react-player';
 
-type Step = 'phone' | 'otp' | 'profile' | 'success';
+type Step = 'phone' | 'otp' | 'profile' | 'success' | 'failed';
 
 interface LoginBottomSheetProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
       setTimeout(() => {
         onClose();
         onSuccess?.();
-      }, 2000);
+      }, 2200);
     }
   };
 
@@ -53,7 +54,7 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
     setTimeout(() => {
       onClose();
       onSuccess?.();
-    }, 2000);
+    }, 2200);
   };
 
   const handleBack = () => {
@@ -74,17 +75,18 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — z-index above ProductModal (3001) */}
       <div 
-        className="fixed inset-0 bg-black/50 z-[999] transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
+        style={{ zIndex: 4000, backdropFilter: 'blur(2px)' }}
         onClick={handleClose}
-        style={{ backdropFilter: 'blur(2px)' }}
       />
 
       {/* Modal - Responsive: Bottom sheet on mobile, Centered on desktop */}
       <div 
-        className="fixed z-[1000] bg-white shadow-2xl bottom-0 left-0 right-0 rounded-t-[32px] md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full md:rounded-2xl animate-slide-up"
+        className="fixed bg-white shadow-2xl bottom-0 left-0 right-0 rounded-t-[32px] md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full md:rounded-2xl animate-slide-up"
         style={{ 
+          zIndex: 4001,
           maxHeight: '75vh',
           animation: 'slideUp 0.3s ease-out'
         }}
@@ -96,7 +98,7 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          {step !== 'phone' && step !== 'success' && (
+          {step !== 'phone' && step !== 'success' && step !== 'failed' && (
             <button 
               onClick={handleBack}
               type="button"
@@ -105,13 +107,14 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
               <BsArrowLeft size={20} />
             </button>
           )}
-          {(step === 'phone' || step === 'success') && <div />}
+          {(step === 'phone' || step === 'success' || step === 'failed') && <div />}
           
           <h2 className="text-xl font-bold text-gray-900">
             {step === 'phone' && 'Login or Sign Up'}
             {step === 'otp' && 'Verify OTP'}
             {step === 'profile' && 'Complete Your Profile'}
-            {step === 'success' && '✓ Success!'}
+            {step === 'success' && 'Welcome!'}
+            {step === 'failed' && 'Login Failed'}
           </h2>
           
           <button 
@@ -134,6 +137,7 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
               countryCode={phoneData.countryCode}
               phone={phoneData.phone}
               onVerified={handleOtpVerified}
+              onFailed={() => setStep('failed')}
             />
           )}
 
@@ -147,19 +151,38 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
           )}
 
           {step === 'success' && (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-[#b22153]/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-8 h-8 text-[#b22153]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
+            <div className="text-center py-4">
+              <div style={{ width: 160, height: 160, margin: '0 auto' }}>
+                <DotLottiePlayer
+                  src="/lottie/success.lottie"
+                  autoplay
+                  loop={false}
+                />
               </div>
-              <p className="text-lg font-bold text-gray-900">Login Successful</p>
+              <p className="text-lg font-bold text-gray-900 -mt-2">Login Successful</p>
+              <p className="text-sm text-gray-500 mt-1">Welcome back!</p>
+            </div>
+          )}
+
+          {step === 'failed' && (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BsExclamationCircleFill size={36} color="#EF4444" />
+              </div>
+              <p className="text-lg font-bold text-gray-900">Verification Failed</p>
+              <p className="text-sm text-gray-500 mt-1 mb-6">The OTP you entered is incorrect or has expired.</p>
+              <button
+                onClick={() => setStep('phone')}
+                className="w-full bg-[#b22153] text-white py-3 rounded-xl font-bold hover:bg-[#9a1d48] transition-all"
+              >
+                Try Again
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes slideUp {
           from {
             transform: translateY(100%);

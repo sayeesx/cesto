@@ -54,6 +54,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   if (pathname?.startsWith('/product/')) return null;
+  if (pathname?.startsWith('/admin')) return null;
 
   return (
     <nav 
@@ -62,19 +63,29 @@ export default function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 60,
         background: '#FFFFFF',
         borderTop: '1px solid #F5F5F5',
         zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        padding: '0 4px',
         boxShadow: 'none',
+        // Shrink to exactly 60px of tappable content, then fill safe area with bg only.
+        // We do NOT use height here — it lets the browser stretch the element.
+        // Instead we use paddingBottom so the box is always exactly what we set.
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
       className="sm:hidden"
       aria-label="Mobile navigation"
     >
+      {/* Fixed 60px tap row — never grows, never shrinks */}
+      <div style={{
+        height: 60,
+        minHeight: 60,
+        maxHeight: 60,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        padding: '0 4px',
+        overflow: 'hidden',
+      }}>
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
         const Icon = isActive ? item.iconActive : item.icon;
@@ -93,12 +104,11 @@ export default function BottomNav() {
               height: '100%',
               textDecoration: 'none',
               color: isActive ? '#b22153' : '#5F5F5F',
-              transition: 'all 0.2s ease',
+              transition: 'color 0.2s ease',
               WebkitTapHighlightColor: 'transparent',
-              position: 'relative'
+              position: 'relative',
             }}
           >
-            {/* Active indicator dot */}
             {isActive && (
               <div style={{
                 position: 'absolute',
@@ -140,15 +150,13 @@ export default function BottomNav() {
               )}
             </div>
             
-            <span style={{ 
-              fontSize: 10, 
-              fontWeight: isActive ? 800 : 600,
-            }}>
+            <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600 }}>
               {item.label}
             </span>
           </Link>
         );
       })}
+      </div>
     </nav>
   );
 }

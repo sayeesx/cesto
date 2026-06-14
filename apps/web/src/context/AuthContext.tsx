@@ -36,15 +36,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const accessToken = localStorage.getItem('cesto_access_token');
       if (accessToken) {
         try {
-          // Timeout after 5s — never block the page indefinitely
           const profilePromise = apiClient.getMe();
+          // 3 second timeout — fast fail, don't block the whole store
           const timeoutPromise = new Promise<null>((_, reject) =>
-            setTimeout(() => reject(new Error('Auth timeout')), 5000)
+            setTimeout(() => reject(new Error('Auth timeout')), 3000)
           );
-          const profile = await Promise.race([profilePromise, timeoutPromise]);
-          if (profile) setUser(profile as any);
+          const profile = await Promise.race([profilePromise, timeoutPromise]) as any;
+          if (profile) {
+            // If the token belongs to an admin account, don't load it into the
+            // customer context — clear it so the store shows as logged-out.
+            if (profile.role === 'ADMIN' || profile.role === 'SUPER_ADMIN') {
+              localStorage.removeItem('cesto_access_token');
+              localStorage.removeItem('cesto_refresh_token');
+              localStorage.removeItem('cesto_user_id');
+            } else {
+              setUser(profile);
+            }
+          }
         } catch (e) {
-          // Token expired, network issue, or timeout — just continue unauthenticated
           localStorage.removeItem('cesto_access_token');
           localStorage.removeItem('cesto_refresh_token');
           localStorage.removeItem('cesto_user_id');

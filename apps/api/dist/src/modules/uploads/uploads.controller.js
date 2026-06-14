@@ -15,11 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UploadsController = void 0;
 const common_1 = require("@nestjs/common");
 const uploads_service_1 = require("./uploads.service");
+const cloudinary_service_1 = require("./cloudinary.service");
 const auth_guard_1 = require("../../common/guards/auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 let UploadsController = class UploadsController {
     uploadsService;
-    constructor(uploadsService) {
+    cloudinaryService;
+    constructor(uploadsService, cloudinaryService) {
         this.uploadsService = uploadsService;
+        this.cloudinaryService = cloudinaryService;
+    }
+    getCloudinarySignature(folder = 'cesto/products') {
+        return this.cloudinaryService.generateSignedUploadParams(folder);
     }
     getPresignedUrl(req, folder = 'general', contentType = 'image/jpeg') {
         return this.uploadsService.getPresignedUploadUrl(folder, contentType, req.user.sub);
@@ -29,6 +37,15 @@ let UploadsController = class UploadsController {
     }
 };
 exports.UploadsController = UploadsController;
+__decorate([
+    (0, common_1.Post)('cloudinary-sign'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('ADMIN', 'SUPER_ADMIN'),
+    __param(0, (0, common_1.Body)('folder')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UploadsController.prototype, "getCloudinarySignature", null);
 __decorate([
     (0, common_1.Post)('presigned-url'),
     __param(0, (0, common_1.Req)()),
@@ -49,6 +66,7 @@ __decorate([
 exports.UploadsController = UploadsController = __decorate([
     (0, common_1.Controller)('v1/uploads'),
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
-    __metadata("design:paramtypes", [uploads_service_1.UploadsService])
+    __metadata("design:paramtypes", [uploads_service_1.UploadsService,
+        cloudinary_service_1.CloudinaryService])
 ], UploadsController);
 //# sourceMappingURL=uploads.controller.js.map

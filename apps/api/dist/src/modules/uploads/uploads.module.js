@@ -10,14 +10,15 @@ exports.UploadsModule = void 0;
 const common_1 = require("@nestjs/common");
 const uploads_controller_1 = require("./uploads.controller");
 const uploads_service_1 = require("./uploads.service");
+const cloudinary_service_1 = require("./cloudinary.service");
 let UploadsModule = class UploadsModule {
 };
 exports.UploadsModule = UploadsModule;
 exports.UploadsModule = UploadsModule = __decorate([
     (0, common_1.Module)({
         controllers: [uploads_controller_1.UploadsController],
-        providers: [uploads_service_1.UploadsService],
-        exports: [uploads_service_1.UploadsService],
+        providers: [uploads_service_1.UploadsService, cloudinary_service_1.CloudinaryService],
+        exports: [uploads_service_1.UploadsService, cloudinary_service_1.CloudinaryService],
     })
 ], UploadsModule);
 //# sourceMappingURL=uploads.module.js.map

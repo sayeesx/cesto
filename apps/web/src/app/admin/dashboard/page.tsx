@@ -1,155 +1,165 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { BsBox, BsCart, BsPeople, BsGraphUp, BsArrowRight, BsClockHistory, BsCheckCircle } from 'react-icons/bs';
-import { apiClient } from '@/lib/api-client';
-import { useAuth } from '@/context/AuthContext';
-import Loader from '@/components/ui/Loader';
+import { BsBox, BsCart, BsGraphUp, BsClockHistory, BsCheckCircle, BsTag } from 'react-icons/bs';
+import { adminApiClient as apiClient } from '@/lib/api-client';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import AdminLoader from '@/components/admin/AdminLoader';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { loading: guardLoading } = useAdminGuard();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/login?admin=true');
-        return;
-      }
-      if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
-        router.push('/');
-        return;
-      }
-    }
+    if (guardLoading) return;
+    apiClient.getAdminDashboard()
+      .then(setStats)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [guardLoading]);
 
-    async function loadStats() {
-      try {
-        const data = await apiClient.getAdminDashboard();
-        setStats(data);
-      } catch (err) {
-        console.error('Failed to load admin stats', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (isAuthenticated && (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')) {
-      loadStats();
-    }
-  }, [isAuthenticated, authLoading, user, router]);
-
-  if (loading || authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader color="#b22153" size={40} />
-      </div>
-    );
-  }
+  if (guardLoading) return <AdminLoader />;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Admin Nav */}
-      <nav className="bg-[#1a3a3a] text-white px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <span className="font-black text-xl italic tracking-tighter">CESTO</span>
-          <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">Admin</span>
+    <div style={{ background: '#F8F9FA', minHeight: '100dvh' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 16px 24px' }}>
+        <h1 style={{ fontSize: 20, fontWeight: 900, color: '#111', marginBottom: 20, textTransform: 'uppercase', letterSpacing: '-0.3px' }}>
+          Dashboard
+        </h1>
+
+        {/* Quick Actions — 1 col mobile, 3 col desktop */}
+        <div
+          className="admin-grid-3"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 20 }}
+        >
+          {[
+            { href: '/admin/products/new', label: 'Add Product', icon: BsBox, color: '#b22153' },
+            { href: '/admin/categories', label: 'Manage Sections', icon: BsTag, color: '#1a3a3a' },
+            { href: '/admin/orders', label: 'View Orders', icon: BsCart, color: '#2563EB' },
+          ].map(({ href, label, icon: Icon, color }) => (
+            <Link key={href} href={href} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              background: 'white', borderRadius: 12,
+              border: '1px solid #E5E7EB',
+              padding: '14px 16px', textDecoration: 'none',
+            }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon size={16} color="white" />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#111', lineHeight: 1.2 }}>{label}</span>
+            </Link>
+          ))}
         </div>
-        <button onClick={() => router.push('/account')} className="text-sm font-bold opacity-80 hover:opacity-100">
-          My Account
-        </button>
-      </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-tight">Executive Dashboard</h1>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <StatCard title="Total Revenue" value={`₹${stats?.totalRevenue?.toLocaleString() || 0}`} icon={<BsGraphUp />} color="bg-blue-500" />
-          <StatCard title="Total Orders" value={stats?.totalOrders || 0} icon={<BsCart />} color="bg-orange-500" />
-          <StatCard title="Pending Orders" value={stats?.pendingOrders || 0} icon={<BsClockHistory />} color="bg-red-500" />
-          <StatCard title="Total Products" value={stats?.totalProducts || 0} icon={<BsBox />} color="bg-green-500" />
+        {/* Stats Grid — 2 col mobile, 4 col desktop */}
+        <div
+          className="admin-grid-4"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}
+        >
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', padding: '16px', height: 72 }} />
+            ))
+          ) : (
+            <>
+              <StatCard title="Revenue" value={`₹${(stats?.totalRevenue || 0).toLocaleString('en-IN')}`} icon={<BsGraphUp />} color="#2563EB" />
+              <StatCard title="Orders" value={stats?.totalOrders || 0} icon={<BsCart />} color="#F59E0B" />
+              <StatCard title="Pending" value={stats?.pendingOrders || 0} icon={<BsClockHistory />} color="#EF4444" />
+              <StatCard title="Products" value={stats?.totalProducts || 0} icon={<BsBox />} color="#10B981" />
+            </>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Recent Orders Section */}
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Recent Orders</h2>
-                <Link href="/admin/orders" className="text-xs font-bold text-[#b22153] flex items-center gap-1">
-                  View all <BsArrowRight />
-                </Link>
-             </div>
-             
-             <div className="space-y-4">
-                {stats?.recentOrders?.length > 0 ? (
-                  stats.recentOrders.map((order: any) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors cursor-pointer">
-                      <div>
-                        <p className="text-xs font-bold text-gray-400 mb-1">{order.orderNumber}</p>
-                        <p className="text-sm font-bold text-gray-900">{order.recipientName}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-black text-gray-900 mb-1">₹{order.totalAmount}</p>
-                        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-gray-200 text-gray-600 rounded">
-                          {order.status}
-                        </span>
-                      </div>
+        {/* Bottom panels — 1 col mobile, 2 col desktop */}
+        <div
+          className="admin-grid-2"
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}
+        >
+          {/* Recent Orders */}
+          <div style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>Recent Orders</h2>
+              <Link href="/admin/orders" style={{ fontSize: 12, fontWeight: 700, color: '#b22153', textDecoration: 'none' }}>View all</Link>
+            </div>
+            <div>
+              {loading ? (
+                <p style={{ padding: 20, textAlign: 'center', color: '#999', fontSize: 13 }}>Loading...</p>
+              ) : stats?.recentOrders?.length > 0 ? (
+                stats.recentOrders.map((order: any) => (
+                  <div key={order.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #F9FAFB' }}>
+                    <div>
+                      <p style={{ fontSize: 11, fontWeight: 800, color: '#6B7280' }}>{order.orderNumber}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#111' }}>{order.recipientName}</p>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-center py-10 text-gray-400 text-sm font-medium italic">No recent orders found.</p>
-                )}
-             </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>₹{order.totalAmount}</p>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: '#F3F4F6', color: '#6B7280' }}>{order.status}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p style={{ padding: '28px 16px', textAlign: 'center', color: '#9CA3AF', fontSize: 13, fontStyle: 'italic' }}>No recent orders</p>
+              )}
+            </div>
           </div>
 
-          {/* Low Stock Alerts */}
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 italic-shadow">
-             <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight mb-6">Inventory Alerts</h2>
-             <div className="space-y-4">
-                {stats?.lowStockProducts?.length > 0 ? (
-                  stats.lowStockProducts.map((prod: any) => (
-                    <div key={prod.id} className="flex items-center justify-between p-4 border border-red-50 bg-red-50/30 rounded-2xl">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gray-200 overflow-hidden">
-                          <img src={prod.imageUrl || '/placeholder.png'} className="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900 max-w-[150px] truncate">{prod.name}</p>
-                          <p className="text-xs font-bold text-red-500 uppercase tracking-widest">Stock: {prod.stock}</p>
-                        </div>
-                      </div>
-                      <Link href={`/admin/products/${prod.id}`} className="text-xs font-bold text-[#b22153]">Fix</Link>
+          {/* Low Stock */}
+          <div style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>Inventory Alerts</h2>
+              <Link href="/admin/products" style={{ fontSize: 12, fontWeight: 700, color: '#b22153', textDecoration: 'none' }}>Manage</Link>
+            </div>
+            <div>
+              {loading ? (
+                <p style={{ padding: 20, textAlign: 'center', color: '#999', fontSize: 13 }}>Loading...</p>
+              ) : stats?.lowStockProducts?.length > 0 ? (
+                stats.lowStockProducts.map((prod: any) => (
+                  <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: '1px solid #F9FAFB' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 8, background: '#F3F4F6', overflow: 'hidden', flexShrink: 0 }}>
+                      {prod.imageUrl && <img src={prod.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
                     </div>
-                  ))
-                ) : (
-                  <div className="py-10 flex flex-col items-center justify-center text-gray-400">
-                    <div className="text-green-500 mb-3">
-                      <BsCheckCircle size={40} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prod.name}</p>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#DC2626' }}>Stock: {prod.stock}</p>
                     </div>
-                    <p className="text-sm font-medium">All products well-stocked!</p>
+                    <Link href={`/admin/products/${prod.id}/edit`} style={{ fontSize: 11, fontWeight: 700, color: '#b22153', textDecoration: 'none', flexShrink: 0 }}>Fix →</Link>
                   </div>
-                )}
-             </div>
+                ))
+              ) : (
+                <div style={{ padding: '28px 16px', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                    <BsCheckCircle size={28} color="#10B981" />
+                  </div>
+                  <p style={{ color: '#9CA3AF', fontSize: 13 }}>All products well-stocked</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .admin-grid-3 { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+          .admin-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+          .admin-grid-2 { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
 
-function StatCard({ title, value, icon, color }: { title: string, value: any, icon: React.ReactNode, color: string }) {
+function StatCard({ title, value, icon, color }: { title: string; value: any; icon: React.ReactNode; color: string }) {
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
-      <div className={`w-12 h-12 ${color} text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-black/5`}>
+    <div style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', padding: '20px', display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ width: 44, height: 44, borderRadius: 10, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 18, flexShrink: 0 }}>
         {icon}
       </div>
       <div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] mb-1">{title}</p>
-        <p className="text-xl font-black text-gray-900 tracking-tight">{value}</p>
+        <p style={{ fontSize: 10, fontWeight: 800, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{title}</p>
+        <p style={{ fontSize: 20, fontWeight: 900, color: '#111', letterSpacing: '-0.5px' }}>{value}</p>
       </div>
     </div>
   );

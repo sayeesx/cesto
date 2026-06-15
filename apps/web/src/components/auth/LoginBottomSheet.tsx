@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BsX, BsArrowLeft, BsExclamationCircleFill } from 'react-icons/bs';
 import PhoneNumberStep from './PhoneNumberStep';
@@ -16,10 +16,8 @@ interface LoginBottomSheetProps {
   onSuccess?: () => void;
 }
 
-// Preload the lottie file as soon as this module is imported (app start).
-// This runs once globally, not per render, so the file is cached before
-// the user even reaches the success screen.
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !(window as any).__lottiePrefetched) {
+  (window as any).__lottiePrefetched = true;
   const link = document.createElement('link');
   link.rel = 'prefetch';
   link.href = '/lottie/success.lottie';
@@ -32,35 +30,27 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
   const [step, setStep] = useState<Step>('phone');
   const [phoneData, setPhoneData] = useState({ countryCode: '+91', phone: '' });
   const [otpValue, setOtpValue] = useState('');
+  const [lottieComplete, setLottieComplete] = useState(false);
   const router = useRouter();
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Clean up any pending close timer on unmount
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     if (isOpen) {
       setStep('phone');
       setPhoneData({ countryCode: '+91', phone: '' });
       setOtpValue('');
-    } else {
-      // Reset after close animation
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+      setLottieComplete(false);
     }
   }, [isOpen]);
 
-  const triggerSuccess = () => {
-    setStep('success');
-    // Close after 1 second — lottie plays instantly
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = setTimeout(() => {
+  useEffect(() => {
+    if (step === 'success' && lottieComplete) {
       onClose();
       onSuccess?.();
-    }, 1000);
+    }
+  }, [step, lottieComplete, onClose, onSuccess]);
+
+  const triggerSuccess = () => {
+    setStep('success');
   };
 
   const handlePhoneSubmit = (countryCode: string, phone: string) => {
@@ -86,7 +76,6 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
   };
 
   const handleClose = () => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     onClose();
     router.push('/');
   };
@@ -182,6 +171,11 @@ export default function LoginBottomSheet({ isOpen, onClose, onSuccess }: LoginBo
                   src="/lottie/success.lottie"
                   autoplay
                   loop={false}
+                  onEvent={(event: string) => {
+                    if (event === 'complete') {
+                      setLottieComplete(true);
+                    }
+                  }}
                 />
               </div>
               <p style={{

@@ -33,8 +33,15 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/products?category=${slug}`);
-        if (res.ok) setProducts(await res.json());
+        const res = await fetch(`/api/v1/products?category=${slug}`);
+        if (res.ok) {
+          const raw = await res.json();
+          const arr = (Array.isArray(raw) ? raw : []).map((p: any) => ({
+            ...p,
+            imageUrl: p.imageUrl || p.images?.[0]?.url || null,
+          }));
+          setProducts(arr);
+        }
       } catch {}
     }
     load();

@@ -8,7 +8,7 @@ import RollingPrice from '@/components/ui/RollingPrice';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
-import Loader from '@/components/ui/Loader';
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 
 export default function CartPage() {
   const [cart, setCart] = useState<any>(null);
@@ -52,7 +52,7 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60dvh]">
-        <Loader color="#b22153" size={40} />
+        <ProductCardSkeleton />
       </div>
     );
   }

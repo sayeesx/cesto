@@ -38,13 +38,17 @@ let ProductsService = class ProductsService {
         if (relationship) {
             where.relationships = { some: { relationship: { slug: relationship } } };
         }
-        return this.prisma.product.findMany({
+        const products = await this.prisma.product.findMany({
             where,
             include: {
                 images: { orderBy: { order: 'asc' } },
             },
             take: 20,
         });
+        return products.map(p => ({
+            ...p,
+            imageUrl: p.images?.[0]?.url || null,
+        }));
     }
     async findOne(slug) {
         const product = await this.prisma.product.findUnique({
@@ -58,7 +62,10 @@ let ProductsService = class ProductsService {
         });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
-        return product;
+        return {
+            ...product,
+            imageUrl: product.images?.[0]?.url || null,
+        };
     }
 };
 exports.ProductsService = ProductsService;

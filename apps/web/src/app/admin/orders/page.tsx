@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
-import AdminLoader from '@/components/admin/AdminLoader';
+
 
 const STATUSES = ['', 'PAYMENT_PENDING', 'PAYMENT_CONFIRMED', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 export default function AdminOrdersPage() {
-  const { loading: guardLoading } = useAdminGuard();
+  useAdminGuard();
   const [orders, setOrders] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -39,7 +39,7 @@ export default function AdminOrdersPage() {
     finally { setLoading(false); }
   }, [page, statusFilter]);
 
-  useEffect(() => { if (!guardLoading) load(); }, [load, guardLoading]);
+  useEffect(() => { load(); }, [load]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
@@ -53,7 +53,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  if (guardLoading) return <AdminLoader />;
+
 
   return (
     <div style={{ background: '#F8F9FA', minHeight: '100dvh' }}>

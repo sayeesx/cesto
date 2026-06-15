@@ -14,6 +14,7 @@ export interface ProductModalData {
   compareAtPrice?: number;
   deliveryEstimate?: string;
   imageUrl?: string;
+  stock?: number;
   isBestseller?: boolean;
   isNew?: boolean;
   description?: string;
@@ -55,14 +56,12 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
 
   useEffect(() => {
     if (product) {
-      setVisible(false);
+      setVisible(true);
       setQty(1);
       setLoadingBtn(false);
       setSelectedCustom([]);
       setSelectedMessage('');
       setCustomNote('');
-      const t = setTimeout(() => setVisible(true), 10);
-      return () => clearTimeout(t);
     }
   }, [product]);
 

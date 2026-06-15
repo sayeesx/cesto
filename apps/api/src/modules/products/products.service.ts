@@ -30,13 +30,18 @@ export class ProductsService {
       where.relationships = { some: { relationship: { slug: relationship } } };
     }
 
-    return this.prisma.product.findMany({
+    const products = await this.prisma.product.findMany({
       where,
       include: {
         images: { orderBy: { order: 'asc' } },
       },
       take: 20,
     });
+
+    return products.map(p => ({
+      ...p,
+      imageUrl: p.images?.[0]?.url || null,
+    }));
   }
 
   async findOne(slug: string) {
@@ -51,6 +56,10 @@ export class ProductsService {
     });
 
     if (!product) throw new NotFoundException('Product not found');
-    return product;
+
+    return {
+      ...product,
+      imageUrl: product.images?.[0]?.url || null,
+    };
   }
 }

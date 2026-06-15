@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 import Link from 'next/link';
 import { 
   BsPersonCircle, 
@@ -51,24 +51,15 @@ export default function AccountPage() {
     return (
       <>
         <Header />
-        <main style={{ minHeight: '100vh', background: '#FCF9FA' }}>
-          <div style={{ 
-            background: 'linear-gradient(135deg, #b22153 0%, #d14175 100%)', 
-            padding: '40px 20px 60px',
-            textAlign: 'center',
-          }}>
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', margin: '0 auto 16px' }} />
-            <div style={{ height: 22, width: 140, background: 'rgba(255,255,255,0.3)', borderRadius: 8, margin: '0 auto 8px' }} />
-            <div style={{ height: 14, width: 100, background: 'rgba(255,255,255,0.2)', borderRadius: 6, margin: '0 auto' }} />
-          </div>
+        <main style={{ minHeight: '100vh', background: '#FCF9FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ProductCardSkeleton />
         </main>
-        <Footer />
       </>
     );
   }
 
   if (!isAuthenticated) {
-    return null; // Modal will show
+    return null;
   }
 
   const handleLogout = async () => {
@@ -149,7 +140,6 @@ export default function AccountPage() {
           </button>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

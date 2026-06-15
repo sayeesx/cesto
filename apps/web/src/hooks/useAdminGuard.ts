@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApiClient } from '@/lib/api-client';
 
@@ -11,20 +11,20 @@ interface AdminUser {
   role: string;
 }
 
-// Module-level cache: verified admin user survives client-side navigation
 let _cachedAdminUser: AdminUser | null = null;
 
 export function useAdminGuard() {
   const router = useRouter();
+  const verified = useRef(false);
   const [adminUser, setAdminUser] = useState<AdminUser | null>(_cachedAdminUser);
-  // Start as NOT loading if we already have a cached user
-  const [loading, setLoading] = useState(_cachedAdminUser === null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Already verified — instant
+    if (verified.current) return;
+    verified.current = true;
+
     if (_cachedAdminUser) {
       setAdminUser(_cachedAdminUser);
-      setLoading(false);
       return;
     }
 
@@ -33,18 +33,15 @@ export function useAdminGuard() {
       : null;
 
     if (!token) {
-      // No token at all — redirect immediately, don't wait
       router.replace('/admin/login');
       return;
     }
 
-    // Token exists — verify it with a short timeout so we don't hang forever
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 6000);
+    // Optimistically show UI, verify in background
+    setLoading(false);
 
     adminApiClient.getMe()
       .then((me: AdminUser) => {
-        clearTimeout(timer);
         if (me.role !== 'ADMIN' && me.role !== 'SUPER_ADMIN') {
           adminApiClient.clearTokens();
           _cachedAdminUser = null;
@@ -53,10 +50,8 @@ export function useAdminGuard() {
         }
         _cachedAdminUser = me;
         setAdminUser(me);
-        setLoading(false);
       })
       .catch(() => {
-        clearTimeout(timer);
         adminApiClient.clearTokens();
         _cachedAdminUser = null;
         router.replace('/admin/login');
@@ -66,7 +61,6 @@ export function useAdminGuard() {
   return { loading, adminUser };
 }
 
-/** Call this on logout to invalidate the in-memory cache */
 export function clearAdminCache() {
   _cachedAdminUser = null;
 }

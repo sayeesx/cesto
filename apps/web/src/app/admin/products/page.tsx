@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { BsPlus, BsSearch, BsPencil, BsTrash, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
-import AdminLoader from '@/components/admin/AdminLoader';
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 
 export default function AdminProductsPage() {
-  const { loading: guardLoading } = useAdminGuard();
+  useAdminGuard();
   const [products, setProducts] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -31,7 +31,7 @@ export default function AdminProductsPage() {
     }
   }, [page, search]);
 
-  useEffect(() => { if (!guardLoading) load(); }, [load, guardLoading]);
+  useEffect(() => { load(); }, [load]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +51,6 @@ export default function AdminProductsPage() {
       setDeleting(null);
     }
   };
-
-  if (guardLoading) return <AdminLoader />;
 
   return (
     <div style={{ background: '#F8F9FA', minHeight: '100dvh' }}>
@@ -93,7 +91,9 @@ export default function AdminProductsPage() {
 
         {/* Desktop: table | Mobile: cards */}
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#999', fontSize: 14 }}>Loading...</div>
+          <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+            <ProductCardSkeleton />
+          </div>
         ) : products.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#999', fontSize: 14 }}>
             No products found. <Link href="/admin/products/new" style={{ color: '#b22153', fontWeight: 700 }}>Add one →</Link>

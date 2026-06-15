@@ -2,7 +2,8 @@ import { PrismaService } from '../prisma/prisma.service';
 export declare class ProductsService {
     private prisma;
     constructor(prisma: PrismaService);
-    findMany(query: any): Promise<({
+    findMany(query: any): Promise<{
+        imageUrl: string | null;
         images: {
             url: string;
             id: string;
@@ -10,7 +11,6 @@ export declare class ProductsService {
             isPrimary: boolean;
             order: number;
         }[];
-    } & {
         id: string;
         name: string;
         createdAt: Date;
@@ -27,8 +27,9 @@ export declare class ProductsService {
         isPersonalizable: boolean;
         tags: string[];
         reservedStock: number;
-    })[]>;
+    }[]>;
     findOne(slug: string): Promise<{
+        imageUrl: string | null;
         categories: ({
             category: {
                 id: string;
@@ -75,7 +76,6 @@ export declare class ProductsService {
             productId: string;
             relationshipId: string;
         })[];
-    } & {
         id: string;
         name: string;
         createdAt: Date;

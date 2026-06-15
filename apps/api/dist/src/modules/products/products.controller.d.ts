@@ -2,7 +2,8 @@ import { ProductsService } from './products.service';
 export declare class ProductsController {
     private readonly productsService;
     constructor(productsService: ProductsService);
-    findAll(query: any): Promise<({
+    findAll(query: any): Promise<{
+        imageUrl: string | null;
         images: {
             url: string;
             id: string;
@@ -10,7 +11,6 @@ export declare class ProductsController {
             isPrimary: boolean;
             order: number;
         }[];
-    } & {
         id: string;
         name: string;
         createdAt: Date;
@@ -27,8 +27,9 @@ export declare class ProductsController {
         isPersonalizable: boolean;
         tags: string[];
         reservedStock: number;
-    })[]>;
+    }[]>;
     findOne(slug: string): Promise<{
+        imageUrl: string | null;
         categories: ({
             category: {
                 id: string;
@@ -75,7 +76,6 @@ export declare class ProductsController {
             productId: string;
             relationshipId: string;
         })[];
-    } & {
         id: string;
         name: string;
         createdAt: Date;

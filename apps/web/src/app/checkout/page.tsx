@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { BsArrowLeft, BsCalendar, BsChatDots, BsGeoAlt, BsPerson, BsShieldFillCheck } from 'react-icons/bs';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
-import Loader from '@/components/ui/Loader';
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 import RollingPrice from '@/components/ui/RollingPrice';
 
 export default function CheckoutPage() {
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
   if (loading || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader color="#b22153" size={40} />
+        <ProductCardSkeleton />
       </div>
     );
   }

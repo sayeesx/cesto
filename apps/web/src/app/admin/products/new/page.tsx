@@ -5,22 +5,20 @@ import Link from 'next/link';
 import { BsChevronLeft } from 'react-icons/bs';
 import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
-import AdminLoader from '@/components/admin/AdminLoader';
 import ProductForm, { ProductFormData } from '@/components/admin/ProductForm';
 
 export default function NewProductPage() {
-  const { loading: guardLoading } = useAdminGuard();
+  useAdminGuard();
   const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
   const [occasions, setOccasions] = useState<any[]>([]);
 
   useEffect(() => {
-    if (guardLoading) return;
     apiClient.adminListCategories().then((d: any) => {
       setCategories(d.categories || []);
       setOccasions(d.occasions || []);
     }).catch(console.error);
-  }, [guardLoading]);
+  }, []);
 
   const handleSubmit = async (data: ProductFormData) => {
     await apiClient.adminCreateProduct({
@@ -31,8 +29,6 @@ export default function NewProductPage() {
     });
     router.push('/admin/products');
   };
-
-  if (guardLoading) return <AdminLoader />;
 
   return (
     <div style={{ minHeight: '100dvh', background: '#F8F9FA' }}>

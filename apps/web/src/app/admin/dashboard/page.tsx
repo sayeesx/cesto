@@ -4,23 +4,19 @@ import React, { useState, useEffect } from 'react';
 import { BsBox, BsCart, BsGraphUp, BsClockHistory, BsCheckCircle, BsTag } from 'react-icons/bs';
 import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
-import AdminLoader from '@/components/admin/AdminLoader';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
-  const { loading: guardLoading } = useAdminGuard();
+  useAdminGuard();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (guardLoading) return;
     apiClient.getAdminDashboard()
       .then(setStats)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [guardLoading]);
-
-  if (guardLoading) return <AdminLoader />;
+  }, []);
 
   return (
     <div style={{ background: '#F8F9FA', minHeight: '100dvh' }}>

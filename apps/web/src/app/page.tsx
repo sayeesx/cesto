@@ -8,6 +8,14 @@ import HeroCarousel from '@/components/home/HeroCarousel';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
+const DEMO_PRODUCTS = [
+  { id: 'd1', name: 'Sunrise Blooms Bouquet',   slug: 'sunrise-blooms',  price: 899,  compareAtPrice: 1199, deliveryEstimate: 'Same Day', isBestseller: true,  imageUrl: 'https://images.unsplash.com/photo-1591886960571-74d15c614741?auto=format&fit=crop&q=80&w=400' },
+  { id: 'd2', name: 'Premium Chocolate Hamper', slug: 'choco-hamper',    price: 1499, compareAtPrice: 1999, deliveryEstimate: 'Same Day', isBestseller: true },
+  { id: 'd3', name: 'Red Rose Arrangement',     slug: 'red-roses',       price: 699,  deliveryEstimate: 'Same Day' },
+  { id: 'd4', name: 'Birthday Cake Delight',    slug: 'birthday-cake',   price: 599,  compareAtPrice: 749,  deliveryEstimate: '2 Hours',  isNew: true },
+  { id: 'd5', name: 'Luxury Gift Hamper',       slug: 'luxury-hamper',   price: 2499, compareAtPrice: 2999, deliveryEstimate: 'Same Day' },
+];
+
 /* ── Static categories — always use these, never overwrite from API ── */
 const STATIC_CATEGORIES = [
   { name: 'Flowers',     imageUrl: '/flowers.webp',     slug: 'flowers' },
@@ -46,22 +54,19 @@ function getCache() {
 
 export default function HomePage() {
   const cached = getCache();
-  const [products, setProducts] = useState<any[]>(cached ?? []);
-  const [loading, setLoading] = useState(!cached);
+  const [products, setProducts] = useState<any[]>(cached ?? DEMO_PRODUCTS);
   const { user } = useAuth();
 
   useEffect(() => {
     const cached = getCache();
-    if (cached) { setProducts(cached); setLoading(false); return; }
+    if (cached) { setProducts(cached); return; }
     async function load() {
-      // 8 second timeout — don't hang the page forever if the API is slow
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 8000);
+      const timeout = new Promise<null>((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 3000)
+      );
       try {
-        const prodData = await apiClient.getProducts();
-        clearTimeout(timer);
+        const prodData = await Promise.race([apiClient.getProducts(), timeout]);
         const raw = Array.isArray(prodData) ? prodData : [];
-        // Map images[] → imageUrl so ProductCard gets the right prop
         const arr = raw.map((p: any) => ({
           ...p,
           imageUrl: p.imageUrl || p.images?.[0]?.url || null,
@@ -69,10 +74,7 @@ export default function HomePage() {
         _productCache = { data: arr, ts: Date.now() };
         setProducts(arr);
       } catch (err) {
-        clearTimeout(timer);
         console.error('Failed to load homepage data', err);
-      } finally {
-        setLoading(false);
       }
     }
     load();
@@ -156,13 +158,8 @@ export default function HomePage() {
             <h2 className="section-heading" style={{ fontSize: 17, fontWeight: 900, color: '#111111' }}>Bestsellers</h2>
             <Link href="/shop" style={{ fontSize: 12, fontWeight: 800, color: '#b22153', textDecoration: 'none' }}>View all</Link>
           </div>
-          {/* Always render card-shaped items — skeleton when loading, real when loaded.
-              This prevents the visual "flash" between two different card styles. */}
           <div className="no-scrollbar desktop-product-grid" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12, alignItems: 'stretch' }}>
-            {(loading
-              ? Array.from({ length: 5 }).map((_, i) => ({ id: `sk-${i}`, _skeleton: true }))
-              : (bestsellers.length > 0 ? bestsellers : products.slice(0, 6))
-            ).map((product: any, index: number) => (
+            {(bestsellers.length > 0 ? bestsellers : products.slice(0, 6)).map((product: any, index: number) => (
               <div
                 key={product.id}
                 style={{
@@ -174,9 +171,7 @@ export default function HomePage() {
                   display: 'flex',
                 }}
               >
-                {product._skeleton
-                  ? <ProductCard name="" slug="" price={0} skeleton />
-                  : <ProductCard {...product} />}
+                <ProductCard {...product} />
               </div>
             ))}
             <div className="scroll-spacer" style={{ width: 16, flexShrink: 0 }} />

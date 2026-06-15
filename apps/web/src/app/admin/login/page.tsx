@@ -20,6 +20,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('phone');
   const [phone, setPhone] = useState('');
+  const phoneLatest = useRef('');
   const [otp, setOtp] = useState(['', '', '', '']);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,7 +49,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
 
-    const cleaned = phone.replace(/\D/g, '');
+    const cleaned = phoneLatest.current;
     if (cleaned.length !== 10) {
       setError('Enter a valid 10-digit phone number');
       return;
@@ -62,7 +63,7 @@ export default function AdminLoginPage() {
 
     setLoading(true);
     try {
-      await adminApiClient.phoneStart({ countryCode: '+91', phone: cleaned });
+      await adminApiClient.phoneStart({ countryCode: '+91', phone: phoneLatest.current });
       setPhone(cleaned);
       setStep('otp');
     } catch (err: any) {
@@ -237,6 +238,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => {
                     const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                     setPhone(val);
+                    phoneLatest.current = val;
                     setError('');
                   }}
                   maxLength={10}
@@ -281,14 +283,14 @@ export default function AdminLoginPage() {
 
               <button
                 type="submit"
-                disabled={loading || phone.replace(/\D/g, '').length !== 10}
+                disabled={loading || phone.length !== 10}
                 style={{
                   width: '100%', height: 52, borderRadius: 14,
-                  background: loading || phone.replace(/\D/g, '').length !== 10
+                  background: loading || phone.length !== 10
                     ? '#E5E7EB' : '#1a3a3a',
-                  color: loading || phone.replace(/\D/g, '').length !== 10
+                  color: loading || phone.length !== 10
                     ? '#9CA3AF' : 'white',
-                  border: 'none', cursor: loading || phone.replace(/\D/g, '').length !== 10
+                  border: 'none', cursor: loading || phone.length !== 10
                     ? 'not-allowed' : 'pointer',
                   fontSize: 14, fontWeight: 800, letterSpacing: '0.5px',
                   transition: 'all 0.2s',

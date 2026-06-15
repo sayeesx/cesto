@@ -12,11 +12,12 @@ interface ProductCardProps {
   compareAtPrice?: number;
   deliveryEstimate?: string;
   imageUrl?: string;
+  stock?: number;
   isBestseller?: boolean;
   isNew?: boolean;
   description?: string;
-  tint?: 'pink' | 'blue'; // kept for API compat but unused in styling
-  skeleton?: boolean;      // when true, renders a shimmer placeholder in the same card shape
+  tint?: 'pink' | 'blue';
+  skeleton?: boolean;
 }
 
 const BRAND = '#b22153';
@@ -82,6 +83,7 @@ export default function ProductCard(props: ProductCardProps) {
     id: props.id || slug,
     name, slug, price, compareAtPrice,
     deliveryEstimate, imageUrl, isBestseller, isNew, description,
+    stock: props.stock,
   };
 
   return (
@@ -145,6 +147,18 @@ export default function ProductCard(props: ProductCardProps) {
               letterSpacing: '0.4px', textTransform: 'uppercase',
             }}>
               {badgeLabel}
+            </span>
+          )}
+          {props.stock !== undefined && props.stock < 5 && (
+            <span style={{
+              position: 'absolute', bottom: 8, left: 8,
+              background: props.stock === 0 ? '#EF4444' : '#F59E0B',
+              color: 'white',
+              fontSize: 9, fontWeight: 800,
+              padding: '3px 8px', borderRadius: 999,
+              letterSpacing: '0.4px',
+            }}>
+              {props.stock === 0 ? 'Stock Out' : `${props.stock} remaining`}
             </span>
           )}
         </div>

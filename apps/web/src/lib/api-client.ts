@@ -237,7 +237,8 @@ class ApiClient {
   }
 
   async addToCart(productId: string, quantity: number) {
-    return this.request('/v1/cart/items', {
+    const cart = await this.getCart();
+    return this.request(`/v1/cart/${cart.id}/items`, {
       method: 'POST',
       body: JSON.stringify({ productId, quantity }),
     });
@@ -245,7 +246,7 @@ class ApiClient {
 
   async updateCartItem(itemId: string, quantity: number) {
     return this.request(`/v1/cart/items/${itemId}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify({ quantity }),
     });
   }

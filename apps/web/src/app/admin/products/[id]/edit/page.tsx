@@ -3,13 +3,13 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BsChevronLeft } from 'react-icons/bs';
-import { apiClient } from '@/lib/api-client';
+import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
 import ProductForm, { ProductFormData } from '@/components/admin/ProductForm';
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { loading: guardLoading } = useAdminGuard();
+  useAdminGuard();
   const router = useRouter();
   const [product, setProduct] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
@@ -17,7 +17,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (guardLoading) return;
     Promise.all([
       apiClient.adminGetProduct(id),
       apiClient.adminListCategories(),
@@ -26,7 +25,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       setCategories(cats.categories || []);
       setOccasions(cats.occasions || []);
     }).catch(console.error).finally(() => setLoading(false));
-  }, [id, guardLoading]);
+  }, [id]);
 
   const handleSubmit = async (data: ProductFormData) => {
     await apiClient.adminUpdateProduct(id, {
@@ -38,10 +37,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     router.push('/admin/products');
   };
 
-  if (guardLoading || loading) {
+  if (loading) {
     return (
-      <div style={{ minHeight: '100dvh', background: '#F8F9FA' }}>
-        <div style={{ padding: 40, textAlign: 'center', color: '#999', fontSize: 14 }}>Loading product...</div>
+      <div style={{ minHeight: '100dvh', background: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#999', fontSize: 14 }}>Loading...</div>
       </div>
     );
   }

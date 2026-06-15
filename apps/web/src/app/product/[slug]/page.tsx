@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import Loader from '@/components/ui/Loader';
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 import { 
   BsHeart, BsHeartFill, BsPlus, BsDash, BsLightningChargeFill, BsTruck, 
   BsGift, BsCheckCircleFill, BsShieldFillCheck, BsArrowLeft, BsBoxSeam
@@ -39,8 +40,11 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/v1/products/${slug}`);
-        if (res.ok) setProduct(await res.json());
+        const res = await fetch(`/api/v1/products/${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProduct({ ...data, imageUrl: data.imageUrl || data.images?.[0]?.url || null });
+        }
       } catch {}
       setLoading(false);
     }
@@ -66,7 +70,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   if (loading) {
     return (
       <main style={{ minHeight: '100vh', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 32, animation: 'spin 1s linear infinite' }}>🎁</div>
+        <ProductCardSkeleton />
       </main>
     );
   }

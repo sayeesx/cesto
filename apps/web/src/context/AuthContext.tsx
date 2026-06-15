@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { apiClient } from '@/lib/api-client';
-import LoginBottomSheet from '@/components/auth/LoginBottomSheet';
+
+const LoginBottomSheet = lazy(() => import('@/components/auth/LoginBottomSheet'));
 
 interface User {
   id: string;
@@ -37,9 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (accessToken) {
         try {
           const profilePromise = apiClient.getMe();
-          // 3 second timeout — fast fail, don't block the whole store
           const timeoutPromise = new Promise<null>((_, reject) =>
-            setTimeout(() => reject(new Error('Auth timeout')), 3000)
+            setTimeout(() => reject(new Error('Auth timeout')), 1000)
           );
           const profile = await Promise.race([profilePromise, timeoutPromise]) as any;
           if (profile) {
@@ -126,11 +126,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-      <LoginBottomSheet 
-        isOpen={loginModalOpen}
-        onClose={closeLoginModal}
-        onSuccess={handleLoginSuccess}
-      />
+      <Suspense fallback={null}>
+        <LoginBottomSheet 
+          isOpen={loginModalOpen}
+          onClose={closeLoginModal}
+          onSuccess={handleLoginSuccess}
+        />
+      </Suspense>
     </AuthContext.Provider>
   );
 }

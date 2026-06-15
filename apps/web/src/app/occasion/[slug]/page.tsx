@@ -32,11 +32,16 @@ export default function OccasionPage({ params }: { params: Promise<{ slug: strin
   useEffect(() => {
     async function load() {
       try {
-        const url = slug === 'all' 
-          ? `${process.env.NEXT_PUBLIC_API_URL}/v1/products` 
-          : `${process.env.NEXT_PUBLIC_API_URL}/v1/products?occasion=${slug}`;
-        const res = await fetch(url);
-        if (res.ok) setProducts(await res.json());
+        const qs = slug === 'all' ? '' : `?occasion=${slug}`;
+        const res = await fetch(`/api/v1/products${qs}`);
+        if (res.ok) {
+          const raw = await res.json();
+          const arr = (Array.isArray(raw) ? raw : []).map((p: any) => ({
+            ...p,
+            imageUrl: p.imageUrl || p.images?.[0]?.url || null,
+          }));
+          setProducts(arr);
+        }
       } catch {}
     }
     load();

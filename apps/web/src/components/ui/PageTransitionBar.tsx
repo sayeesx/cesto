@@ -25,7 +25,6 @@ function Bar() {
   const animRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevRoute = useRef(pathname + searchParams.toString());
 
-  // Start bar
   const start = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (animRef.current) clearInterval(animRef.current);
@@ -33,7 +32,6 @@ function Bar() {
     setActive(true);
     setWidth(10);
 
-    // Gradually advance to ~85% — never completes on its own
     let w = 10;
     animRef.current = setInterval(() => {
       w = w + (85 - w) * 0.08;
@@ -41,7 +39,6 @@ function Bar() {
     }, 120);
   };
 
-  // Complete bar
   const complete = () => {
     if (animRef.current) clearInterval(animRef.current);
     setWidth(100);
@@ -52,16 +49,18 @@ function Bar() {
     }, 380);
   };
 
-  // Watch for route changes
+  // On every route change: flash the bar to show navigation happened
   useEffect(() => {
     const route = pathname + searchParams.toString();
     if (route !== prevRoute.current) {
-      complete();
       prevRoute.current = route;
+      start();
+      const t = setTimeout(() => complete(), 600);
+      return () => clearTimeout(t);
     }
   }, [pathname, searchParams]);
 
-  // Listen for custom loading events dispatched by search/other components
+  // Custom loading events
   useEffect(() => {
     const onStart = () => start();
     const onEnd = () => complete();

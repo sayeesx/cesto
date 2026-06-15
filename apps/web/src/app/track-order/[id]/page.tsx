@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { BsArrowLeft, BsCheckCircleFill, BsBoxSeam, BsTruck, BsHouseCheck, BsHeartFill } from 'react-icons/bs';
 import { apiClient } from '@/lib/api-client';
-import Loader from '@/components/ui/Loader';
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 import Link from 'next/link';
 
 const ORDER_STATUS_STEPS = [
@@ -41,7 +41,7 @@ export default function OrderTrackingPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader color="#b22153" size={40} />
+        <ProductCardSkeleton />
       </div>
     );
   }

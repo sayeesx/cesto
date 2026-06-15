@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { BsPlus, BsPencil, BsTrash, BsCheck, BsX } from 'react-icons/bs';
 import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
-import AdminLoader from '@/components/admin/AdminLoader';
 import { uploadToCloudinary } from '@/lib/cloudinary-upload';
 
 function slugify(name: string) {
@@ -14,7 +13,7 @@ interface Category { id: string; name: string; slug: string; imageUrl?: string; 
 interface Occasion { id: string; name: string; slug: string; imageUrl?: string; isActive: boolean; _count: { products: number }; }
 
 export default function AdminCategoriesPage() {
-  const { loading: guardLoading } = useAdminGuard();
+  useAdminGuard();
   const [categories, setCategories] = useState<Category[]>([]);
   const [occasions, setOccasions] = useState<Occasion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +37,7 @@ export default function AdminCategoriesPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { if (!guardLoading) load(); }, [guardLoading, load]);
+  useEffect(() => { load(); }, [load]);
 
   const handleCatNameChange = (name: string) => {
     setNewCat(f => ({ ...f, name, slug: slugify(name) }));
@@ -90,7 +89,7 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  if (guardLoading) return <AdminLoader />;
+
 
   const inputStyle: React.CSSProperties = {
     height: 38, padding: '0 12px', border: '1.5px solid #E5E7EB',

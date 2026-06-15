@@ -13,11 +13,14 @@ import {
 import { adminApiClient } from '@/lib/api-client';
 import { clearAdminCache } from '@/hooks/useAdminGuard';
 
+import { BsImages } from 'react-icons/bs';
+
 const mobileNavItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: BsSpeedometer },
   { href: '/admin/products',  label: 'Products',  icon: BsBoxSeam },
   { href: '/admin/orders',    label: 'Orders',    icon: BsCart3 },
   { href: '/admin/categories',label: 'Sections',  icon: BsTag },
+  { href: '/admin/banners',   label: 'Banners',   icon: BsImages },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

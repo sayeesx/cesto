@@ -1,2 +1,85 @@
+import { UsersService } from './users.service';
 export declare class UsersController {
+    private readonly usersService;
+    constructor(usersService: UsersService);
+    getAddresses(req: any): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }[]>;
+    createAddress(req: any, body: any): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
+    updateAddress(req: any, id: string, body: any): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
+    deleteAddress(req: any, id: string): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
+    setDefault(req: any, id: string): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
 }

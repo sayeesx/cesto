@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Query, Body, UseGuards, Req, Post, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Query, Body, UseGuards, Req, Post, Put, Delete } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminProductsService } from './admin-products.service';
 import { AdminCategoriesService } from './admin-categories.service';
@@ -100,5 +100,16 @@ export class AdminController {
   @Delete('categories/:id')
   deleteCategory(@Param('id') id: string, @Req() req: any) {
     return this.adminCategoriesService.deleteCategory(id, req.user.sub);
+  }
+
+  // ── Banners ──
+  @Get('banners')
+  getBanners() {
+    return this.adminService.getBanners();
+  }
+
+  @Put('banners')
+  updateBanners(@Body() dto: { banners: any[] }, @Req() req: any) {
+    return this.adminService.updateBanners(dto.banners, req.user.sub);
   }
 }

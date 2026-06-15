@@ -222,7 +222,7 @@ export default function CheckoutPage() {
       </form>
 
       {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-100 shadow-2xl z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-100 shadow-2xl" style={{ zIndex: 1001 }}>
         <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Amount to Pay</span>

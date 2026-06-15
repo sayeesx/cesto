@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Headers, Req, UseGuards, BadRequestException } from '@nestjs/common';
+import { Request } from 'express';
 import { PaymentsService } from './payments.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
 
@@ -8,14 +9,14 @@ export class PaymentsController {
 
   @UseGuards(AuthGuard)
   @Post('create-order')
-  createOrder(@Req() req: any, @Body('orderId') orderId: string) {
+  createOrder(@Req() req: Request & { user: any }, @Body('orderId') orderId: string) {
     return this.paymentsService.createRazorpayOrder(orderId, req.user.sub);
   }
 
   @UseGuards(AuthGuard)
   @Post('verify')
   verify(
-    @Req() req: any,
+    @Req() req: Request & { user: any },
     @Body() dto: {
       razorpayOrderId: string;
       razorpayPaymentId: string;
@@ -27,7 +28,7 @@ export class PaymentsController {
 
   @Post('webhook')
   async webhook(
-    @Req() req: any,
+    @Req() req: Request & { body: any },
     @Headers('x-razorpay-signature') signature: string,
     @Headers('x-razorpay-event-id') eventId: string,
   ) {

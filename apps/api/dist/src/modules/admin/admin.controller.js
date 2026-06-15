@@ -70,6 +70,12 @@ let AdminController = class AdminController {
     deleteCategory(id, req) {
         return this.adminCategoriesService.deleteCategory(id, req.user.sub);
     }
+    getBanners() {
+        return this.adminService.getBanners();
+    }
+    updateBanners(dto, req) {
+        return this.adminService.updateBanners(dto.banners, req.user.sub);
+    }
 };
 exports.AdminController = AdminController;
 __decorate([
@@ -176,6 +182,20 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "deleteCategory", null);
+__decorate([
+    (0, common_1.Get)('banners'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getBanners", null);
+__decorate([
+    (0, common_1.Put)('banners'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "updateBanners", null);
 exports.AdminController = AdminController = __decorate([
     (0, common_1.Controller)('v1/admin'),
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard, roles_guard_1.RolesGuard),

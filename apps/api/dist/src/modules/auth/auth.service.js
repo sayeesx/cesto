@@ -137,11 +137,11 @@ let AuthService = class AuthService {
         const [at, rt] = await Promise.all([
             this.jwtService.signAsync(payload, {
                 secret: process.env.JWT_SECRET,
-                expiresIn: '15m',
+                expiresIn: '7d',
             }),
             this.jwtService.signAsync(payload, {
                 secret: process.env.REFRESH_TOKEN_SECRET,
-                expiresIn: '7d',
+                expiresIn: '30d',
             }),
         ]);
         await this.saveRefreshToken(userId, rt);
@@ -153,7 +153,7 @@ let AuthService = class AuthService {
     async saveRefreshToken(userId, refreshToken) {
         const hashedToken = this.hashToken(refreshToken);
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
+        expiresAt.setDate(expiresAt.getDate() + 30);
         await this.prisma.refreshToken.create({
             data: {
                 token: hashedToken,

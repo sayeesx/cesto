@@ -117,13 +117,15 @@ export class AuthService {
     const payload = { sub: userId, email, role, jti: crypto.randomUUID() };
 
     const [at, rt] = await Promise.all([
+      // Access token: 7 days — long enough that a shopper navigating between pages
+      // won't lose their session. Refresh token is still rotated on each use.
       this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET,
-        expiresIn: '15m',
+        expiresIn: '7d',
       }),
       this.jwtService.signAsync(payload, {
         secret: process.env.REFRESH_TOKEN_SECRET,
-        expiresIn: '7d',
+        expiresIn: '30d',
       }),
     ]);
 
@@ -138,7 +140,7 @@ export class AuthService {
   private async saveRefreshToken(userId: string, refreshToken: string) {
     const hashedToken = this.hashToken(refreshToken);
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
     await this.prisma.refreshToken.create({
       data: {

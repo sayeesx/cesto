@@ -16,20 +16,15 @@ const occasions = [
   { name: 'Celebrate', img: '/occasion/celeberation.avif', slug: 'celebration' },
 ];
 
-const demoProducts = [
-  { id: 'mock1', name: 'Premium Mock Product 1', slug: 'mock-1', price: 999, compareAtPrice: 1299, isBestseller: true, deliveryEstimate: 'Same Day' },
-  { id: 'mock2', name: 'Premium Mock Product 2', slug: 'mock-2', price: 1499, isNew: true, deliveryEstimate: 'Next Day' },
-  { id: 'mock3', name: 'Premium Mock Product 3', slug: 'mock-3', price: 799, compareAtPrice: 999, deliveryEstimate: 'Same Day' },
-  { id: 'mock4', name: 'Premium Mock Product 4', slug: 'mock-4', price: 1999, deliveryEstimate: 'Next Day' },
-];
-
 export default function OccasionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showSort, setShowSort] = useState(false);
   const title = slug === 'all' ? 'All Occasions' : slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
   useEffect(() => {
+    setLoading(true);
     async function load() {
       try {
         const qs = slug === 'all' ? '' : `?occasion=${slug}`;
@@ -43,6 +38,7 @@ export default function OccasionPage({ params }: { params: Promise<{ slug: strin
           setProducts(arr);
         }
       } catch {}
+      finally { setLoading(false); }
     }
     load();
   }, [slug]);
@@ -105,7 +101,7 @@ export default function OccasionPage({ params }: { params: Promise<{ slug: strin
             <div style={{ padding: '20px 16px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <h1 style={{ fontSize: 20, fontWeight: 900, color: '#111111', letterSpacing: '-0.5px' }}>{title}</h1>
-                <p style={{ fontSize: 12, fontWeight: 700, color: '#A9A0AE', marginTop: 2 }}>{products.length > 0 ? products.length : demoProducts.length} Items found</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: '#A9A0AE', marginTop: 2 }}>{loading ? 'Loading…' : `${products.length} Items found`}</p>
               </div>
               <button 
                 onClick={() => setShowSort(true)}
@@ -145,9 +141,10 @@ export default function OccasionPage({ params }: { params: Promise<{ slug: strin
                 gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: 12,
               }}>
-                {(products.length > 0 ? products : demoProducts).map((p: any) => (
-                  <ProductCard key={p.id} {...p} />
-                ))}
+                {loading
+                  ? Array.from({ length: 6 }).map((_, i) => <ProductCard key={i} name="" slug="" price={0} skeleton />)
+                  : products.map((p: any) => <ProductCard key={p.id} {...p} />)
+                }
               </div>
             </div>
           </div>

@@ -1,2 +1,107 @@
+import { PrismaService } from '../prisma/prisma.service';
 export declare class UsersService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    getAddresses(userId: string): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }[]>;
+    createAddress(userId: string, dto: {
+        type?: string;
+        name: string;
+        phone: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country?: string;
+        isDefault?: boolean;
+    }): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
+    updateAddress(userId: string, addressId: string, dto: Partial<{
+        type: string;
+        name: string;
+        phone: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
+    deleteAddress(userId: string, addressId: string): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
+    setDefaultAddress(userId: string, addressId: string): Promise<{
+        id: string;
+        phone: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: string;
+        addressLine: string;
+        area: string;
+        city: string;
+        pincode: string;
+        state: string;
+        country: string;
+        isDefault: boolean;
+    }>;
 }

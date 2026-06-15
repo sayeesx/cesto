@@ -1,4 +1,5 @@
 import { Body, Controller, Post, Get, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, RefreshDto } from './dto/auth.dto';
 import { PhoneStartDto, PhoneVerifyDto, PhoneCompleteProfileDto } from './dto/phone-auth.dto';
@@ -30,13 +31,13 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@Req() req: any, @Body() dto: RefreshDto) {
+  logout(@Req() req: Request & { user: any }, @Body() dto: RefreshDto) {
     return this.authService.logout(req.user.sub, dto.refreshToken);
   }
 
   @UseGuards(AuthGuard)
   @Get('me')
-  async me(@Req() req: any) {
+  async me(@Req() req: Request & { user: any }) {
     const user = await this.authService.getProfile(req.user.sub);
     return user;
   }

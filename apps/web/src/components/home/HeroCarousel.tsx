@@ -1,26 +1,28 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { apiClient } from '@/lib/api-client';
 
-const slides = [
-  {
-    id: '1',
-    image: 'https://res.cloudinary.com/dar6yzr7z/image/upload/f_auto,q_auto/v1780906562/fifa_bx1ocu.avif',
-  },
-  {
-    id: '2',
-    image: 'https://res.cloudinary.com/dar6yzr7z/image/upload/f_auto,q_auto/v1780908820/fathersday_y8bigl.avif',
-  },
-  {
-    id: '3',
-    image: 'https://res.cloudinary.com/dar6yzr7z/image/upload/f_auto,q_auto/v1780909463/chocojar_1_bbw1wl.avif',
-  },
+const FALLBACK_SLIDES = [
+  { id: '1', image: 'https://res.cloudinary.com/dar6yzr7z/image/upload/f_auto,q_auto/v1780906562/fifa_bx1ocu.avif' },
+  { id: '2', image: 'https://res.cloudinary.com/dar6yzr7z/image/upload/f_auto,q_auto/v1780908820/fathersday_y8bigl.avif' },
+  { id: '3', image: 'https://res.cloudinary.com/dar6yzr7z/image/upload/f_auto,q_auto/v1780909463/chocojar_1_bbw1wl.avif' },
 ];
 
 export default function HeroCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [slides, setSlides] = useState(FALLBACK_SLIDES);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    apiClient.getBanners()
+      .then((data: any) => {
+        const arr = Array.isArray(data) ? data : [];
+        if (arr.length > 0) setSlides(arr.map((s: any, i: number) => ({ id: s.id || String(i), image: s.image })));
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const check = () => setIsDesktop(window.innerWidth >= 768);

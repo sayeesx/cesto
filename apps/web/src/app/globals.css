@@ -74,9 +74,11 @@
 .promo-strip__item {
   padding: 0 40px;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-family: var(--font-archivo), 'Archivo', sans-serif;
+  font-style: normal;
 }
 
 /* Utils */

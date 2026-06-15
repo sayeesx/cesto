@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { UploadsService } from './uploads.service';
 import { CloudinaryService } from './cloudinary.service';
 export declare class UploadsController {
@@ -13,12 +14,16 @@ export declare class UploadsController {
         signature: string;
         uploadUrl: string;
     };
-    getPresignedUrl(req: any, folder?: string, contentType?: string): Promise<{
+    getPresignedUrl(req: Request & {
+        user: any;
+    }, folder?: string, contentType?: string): Promise<{
         uploadUrl: string;
         publicUrl: string;
         key: string;
     }>;
-    deleteFile(req: any, key: string): Promise<{
+    deleteFile(req: Request & {
+        user: any;
+    }, key: string): Promise<{
         success: boolean;
     }>;
 }

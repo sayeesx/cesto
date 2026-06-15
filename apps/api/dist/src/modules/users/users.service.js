@@ -5,13 +5,79 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
 let UsersService = class UsersService {
+    prisma;
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    async getAddresses(userId) {
+        return this.prisma.address.findMany({
+            where: { userId },
+            orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+        });
+    }
+    async createAddress(userId, dto) {
+        if (dto.isDefault) {
+            await this.prisma.address.updateMany({
+                where: { userId },
+                data: { isDefault: false },
+            });
+        }
+        const count = await this.prisma.address.count({ where: { userId } });
+        const shouldDefault = dto.isDefault || count === 0;
+        return this.prisma.address.create({
+            data: {
+                userId,
+                type: dto.type || 'HOME',
+                name: dto.name,
+                phone: dto.phone,
+                addressLine: dto.addressLine,
+                area: dto.area,
+                city: dto.city,
+                pincode: dto.pincode,
+                state: dto.state,
+                country: dto.country || 'India',
+                isDefault: shouldDefault,
+                updatedAt: new Date(),
+            },
+        });
+    }
+    async updateAddress(userId, addressId, dto) {
+        const address = await this.prisma.address.findFirst({ where: { id: addressId, userId } });
+        if (!address)
+            throw new common_1.NotFoundException('Address not found');
+        if (dto.isDefault) {
+            await this.prisma.address.updateMany({ where: { userId }, data: { isDefault: false } });
+        }
+        return this.prisma.address.update({
+            where: { id: addressId },
+            data: { ...dto, updatedAt: new Date() },
+        });
+    }
+    async deleteAddress(userId, addressId) {
+        const address = await this.prisma.address.findFirst({ where: { id: addressId, userId } });
+        if (!address)
+            throw new common_1.NotFoundException('Address not found');
+        return this.prisma.address.delete({ where: { id: addressId } });
+    }
+    async setDefaultAddress(userId, addressId) {
+        const address = await this.prisma.address.findFirst({ where: { id: addressId, userId } });
+        if (!address)
+            throw new common_1.NotFoundException('Address not found');
+        await this.prisma.address.updateMany({ where: { userId }, data: { isDefault: false } });
+        return this.prisma.address.update({ where: { id: addressId }, data: { isDefault: true, updatedAt: new Date() } });
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
-    (0, common_1.Injectable)()
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

@@ -5,10 +5,15 @@ import { AuthService } from './auth.service';
 
 @Module({
   imports: [
-    JwtModule.register({
+    // registerAsync defers secret resolution to runtime so dotenv is loaded first.
+    // Using register() read process.env.JWT_SECRET at import time (before bootstrap()),
+    // which produced undefined and caused every token verification to fail.
+    JwtModule.registerAsync({
       global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1d' },
+      useFactory: () => ({
+        secret: process.env.JWT_SECRET,
+        signOptions: { expiresIn: '7d' },
+      }),
     }),
   ],
   controllers: [AuthController],

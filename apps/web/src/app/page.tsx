@@ -54,12 +54,13 @@ function getCache() {
 
 export default function HomePage() {
   const cached = getCache();
-  const [products, setProducts] = useState<any[]>(cached ?? DEMO_PRODUCTS);
+  const [products, setProducts] = useState<any[]>(cached ?? []);
+  const [loading, setLoading] = useState(!cached);
   const { user } = useAuth();
 
   useEffect(() => {
     const cached = getCache();
-    if (cached) { setProducts(cached); return; }
+    if (cached) { setProducts(cached); setLoading(false); return; }
     async function load() {
       const timeout = new Promise<null>((_, reject) =>
         setTimeout(() => reject(new Error('timeout')), 3000)
@@ -75,6 +76,10 @@ export default function HomePage() {
         setProducts(arr);
       } catch (err) {
         console.error('Failed to load homepage data', err);
+        // On timeout/error, fall back to demo products so page isn't empty
+        setProducts(DEMO_PRODUCTS);
+      } finally {
+        setLoading(false);
       }
     }
     load();
@@ -87,10 +92,10 @@ export default function HomePage() {
       {/* ── PROMO STRIP — always first, fixed on desktop ── */}
       <div className="promo-strip">
         <div className="promo-strip__track">
-          <span className="promo-strip__item">⚡ welcomeBonus 20% off on first order</span>
-          <span className="promo-strip__item">🎁 freeShipping on orders above ₹999</span>
-          <span className="promo-strip__item">⚡ welcomeBonus 20% off on first order</span>
-          <span className="promo-strip__item">🎁 freeShipping on orders above ₹999</span>
+          <span className="promo-strip__item">⚡ Welcome Bonus 20% Off On First Order</span>
+          <span className="promo-strip__item">🎁 Free Shipping On Orders Above ₹999</span>
+          <span className="promo-strip__item">⚡ Welcome Bonus 20% Off On First Order</span>
+          <span className="promo-strip__item">🎁 Free Shipping On Orders Above ₹999</span>
         </div>
       </div>
 
@@ -159,7 +164,13 @@ export default function HomePage() {
             <Link href="/shop" style={{ fontSize: 12, fontWeight: 800, color: '#b22153', textDecoration: 'none' }}>View all</Link>
           </div>
           <div className="no-scrollbar desktop-product-grid" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12, alignItems: 'stretch' }}>
-            {(bestsellers.length > 0 ? bestsellers : products.slice(0, 6)).map((product: any, index: number) => (
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ width: 160, minWidth: 160, maxWidth: 160, flexShrink: 0, marginLeft: i === 0 ? 16 : 0, display: 'flex' }}>
+                  <ProductCard name="" slug="" price={0} skeleton />
+                </div>
+              ))
+            ) : (bestsellers.length > 0 ? bestsellers : products.slice(0, 6)).map((product: any, index: number) => (
               <div
                 key={product.id}
                 style={{
@@ -230,14 +241,20 @@ export default function HomePage() {
           </div>
 
           {/* Products row */}
-          {products.length > 0 && (
+          {(loading || products.length > 0) && (
             <>
               <div style={{ padding: '16px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ fontSize: 15, fontWeight: 900, color: '#1e3a8a' }}>Gifts for Dad</h3>
                 <Link href="/occasion/fathers-day" style={{ fontSize: 12, fontWeight: 800, color: '#2563eb', textDecoration: 'none' }}>View all</Link>
               </div>
               <div className="no-scrollbar desktop-product-grid" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8, alignItems: 'stretch' }}>
-                {products.slice(0, 6).map((product: any, index: number) => (
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} style={{ width: 160, minWidth: 160, maxWidth: 160, flexShrink: 0, marginLeft: i === 0 ? 16 : 0, display: 'flex' }}>
+                      <ProductCard name="" slug="" price={0} skeleton />
+                    </div>
+                  ))
+                ) : products.slice(0, 6).map((product: any, index: number) => (
                   <div key={product.id} style={{ width: 160, minWidth: 160, maxWidth: 160, flexShrink: 0, marginLeft: index === 0 ? 16 : 0, display: 'flex' }}>
                     <ProductCard {...product} />
                   </div>
@@ -249,14 +266,20 @@ export default function HomePage() {
         </section>
 
         {/* ── New Arrivals ── */}
-        {products.length > 0 && (
+        {(loading || products.length > 0) && (
           <section style={{ background: '#FFFFFF', padding: '24px 0' }}>
             <div className="section-header-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 16px' }}>
               <h2 className="section-heading" style={{ fontSize: 17, fontWeight: 900, color: '#111111' }}>New Arrivals</h2>
               <Link href="/shop?sort=new" style={{ fontSize: 12, fontWeight: 800, color: '#b22153', textDecoration: 'none' }}>View all</Link>
             </div>
             <div className="no-scrollbar desktop-product-grid" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12, alignItems: 'stretch' }}>
-              {[...products].reverse().slice(0, 6).map((product: any, index: number) => (
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} style={{ width: 160, minWidth: 160, maxWidth: 160, flexShrink: 0, marginLeft: i === 0 ? 16 : 0, display: 'flex' }}>
+                    <ProductCard name="" slug="" price={0} skeleton />
+                  </div>
+                ))
+              ) : [...products].reverse().slice(0, 6).map((product: any, index: number) => (
                 <div key={product.id} style={{ width: 160, minWidth: 160, maxWidth: 160, flexShrink: 0, marginLeft: index === 0 ? 16 : 0, display: 'flex' }}>
                   <ProductCard {...product} />
                 </div>

@@ -124,6 +124,19 @@ let OrdersService = class OrdersService {
             throw new common_1.InternalServerErrorException('Checkout failed. Please try again.');
         }
     }
+    async listOrders(userId) {
+        const where = userId ? { userId } : {};
+        return this.prisma.order.findMany({
+            where,
+            include: {
+                items: { include: { product: true } },
+                payments: true,
+                statusHistory: { orderBy: { createdAt: 'desc' }, take: 1 },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+        });
+    }
     async getOrder(id) {
         const order = await this.prisma.order.findUnique({
             where: { id },

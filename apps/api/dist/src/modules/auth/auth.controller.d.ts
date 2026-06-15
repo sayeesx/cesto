@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, RefreshDto } from './dto/auth.dto';
 import { PhoneStartDto, PhoneVerifyDto, PhoneCompleteProfileDto } from './dto/phone-auth.dto';
@@ -16,8 +17,12 @@ export declare class AuthController {
         access_token: string;
         refresh_token: string;
     }>;
-    logout(req: any, dto: RefreshDto): Promise<void>;
-    me(req: any): Promise<{
+    logout(req: Request & {
+        user: any;
+    }, dto: RefreshDto): Promise<void>;
+    me(req: Request & {
+        user: any;
+    }): Promise<{
         id: string;
         email: string | null;
         phone: string | null;

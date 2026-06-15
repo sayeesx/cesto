@@ -227,7 +227,16 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
                 </div>
                 <Link
                   href={`/product/${product.slug}`}
-                  onClick={() => handleClose()}
+                  onClick={() => {
+                    sessionStorage.setItem('preview_product', JSON.stringify({
+                      id: product.id, name: product.name, slug: product.slug,
+                      price: product.price, compareAtPrice: product.compareAtPrice,
+                      deliveryEstimate: product.deliveryEstimate, imageUrl: product.imageUrl,
+                      stock: product.stock, isBestseller: product.isBestseller,
+                      isNew: product.isNew, description: product.description,
+                    }));
+                    handleClose();
+                  }}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: '#b22153', textDecoration: 'none' }}
                 >
                   View full details <BsArrowRight size={10} />

@@ -115,17 +115,29 @@ class ApiClient {
       if (res.ok) {
         const data = await res.json();
         this.setTokens(data);
+        // Notify AuthContext so it can re-hydrate the user profile without a
+        // full page reload. Without this event, a silent refresh succeeded but
+        // user stayed null in React state, causing the session-loss symptom.
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('cesto_token_refreshed'));
+        }
         return data;
       }
-    } catch (e) {
-      console.error('Failed to refresh token', e);
-    }
 
-    this.clearTokens();
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('cesto_unauthorized'));
+      // Refresh token rejected by the server (401/400) — session truly expired
+      if (res.status === 401 || res.status === 400) {
+        this.clearTokens();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('cesto_unauthorized'));
+        }
+      }
+      // Any other server error (5xx) — don't clear tokens, may be transient
+      return null;
+    } catch (e) {
+      // Network error — don't clear tokens, user just has no connectivity
+      console.error('Failed to refresh token (network error)', e);
+      return null;
     }
-    return null;
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
@@ -230,6 +242,10 @@ class ApiClient {
 
   // ── Cart & Checkout ───────────────────────────────────────────────────────
 
+  async getPricing() {
+    return this.request('/v1/settings/pricing', {}, true);
+  }
+
   async getCart() {
     const tokens = this.getTokens();
     const qs = tokens?.userId ? `?userId=${tokens.userId}` : '';
@@ -266,6 +282,51 @@ class ApiClient {
 
   async getOrder(orderId: string) {
     return this.request(`/v1/orders/${orderId}`);
+  }
+
+  // ── Orders (customer) ──────────────────────────────────────────────────────
+
+  async getUserOrders() {
+    return this.request('/v1/orders');
+  }
+
+  // ── Addresses ─────────────────────────────────────────────────────────────
+
+  async getAddresses() {
+    return this.request('/v1/users/addresses');
+  }
+
+  async createAddress(data: {
+    type?: string;
+    name: string;
+    phone: string;
+    addressLine: string;
+    area: string;
+    city: string;
+    pincode: string;
+    state: string;
+    country?: string;
+    isDefault?: boolean;
+  }) {
+    return this.request('/v1/users/addresses', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateAddress(id: string, data: any) {
+    return this.request(`/v1/users/addresses/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAddress(id: string) {
+    return this.request(`/v1/users/addresses/${id}`, { method: 'DELETE' });
+  }
+
+  async setDefaultAddress(id: string) {
+    return this.request(`/v1/users/addresses/${id}/default`, { method: 'PATCH' });
   }
 
   // ── Admin ─────────────────────────────────────────────────────────────────
@@ -322,6 +383,19 @@ class ApiClient {
 
   async adminUpdateOrderStatus(id: string, status: string) {
     return this.request(`/v1/admin/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  }
+
+  // ── Banners ──
+  async getBanners() {
+    return this.request('/v1/settings/banners', {}, true);
+  }
+
+  async adminGetBanners() {
+    return this.request('/v1/admin/banners');
+  }
+
+  async adminUpdateBanners(banners: any[]) {
+    return this.request('/v1/admin/banners', { method: 'PUT', body: JSON.stringify({ banners }) });
   }
 }
 

@@ -120,4 +120,6 @@ export declare class AdminService {
         ipAddress: string | null;
         userAgent: string | null;
     })[]>;
+    getBanners(): Promise<any[]>;
+    updateBanners(banners: any[], userId?: string): Promise<import("@prisma/client/runtime/client").JsonValue>;
 }

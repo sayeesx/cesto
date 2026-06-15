@@ -393,4 +393,8 @@ export declare class AdminController {
     deleteCategory(id: string, req: any): Promise<{
         success: boolean;
     }>;
+    getBanners(): Promise<any[]>;
+    updateBanners(dto: {
+        banners: any[];
+    }, req: any): Promise<import("@prisma/client/runtime/client").JsonValue>;
 }

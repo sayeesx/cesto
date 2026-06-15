@@ -13,7 +13,8 @@ import {
   BsBoxArrowRight,
   BsHeadset,
   BsHeart,
-  BsBag
+  BsBag,
+  BsChevronRight,
 } from 'react-icons/bs';
 
 const menuItems = [
@@ -42,6 +43,11 @@ export default function AccountPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const hasToken = typeof window !== 'undefined' && localStorage.getItem('cesto_access_token');
+    if (!hasToken) {
+      openLoginModal();
+      return;
+    }
     if (!loading && !isAuthenticated) {
       openLoginModal();
     }
@@ -121,6 +127,7 @@ export default function AccountPage() {
                       <item.icon size={18} color="#5F5F5F" />
                       <span style={{ fontSize: 14, fontWeight: 700 }}>{item.label}</span>
                     </div>
+                    <BsChevronRight size={14} color="#C0C0C0" />
                   </Link>
                 ))}
               </div>

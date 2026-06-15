@@ -88,4 +88,30 @@ export class AdminService {
       take: limit,
     });
   }
+
+  // ── Banners ──
+  async getBanners() {
+    const row = await this.prisma.adminSetting.findUnique({ where: { key: 'home_banners' } });
+    return (row?.value as any[]) || [];
+  }
+
+  async updateBanners(banners: any[], userId?: string) {
+    const row = await this.prisma.adminSetting.upsert({
+      where: { key: 'home_banners' },
+      create: { key: 'home_banners', value: banners },
+      update: { value: banners },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'UPDATE_BANNERS',
+        entityType: 'AdminSetting',
+        entityId: row.id,
+        newValue: { banners },
+      },
+    });
+
+    return row.value;
+  }
 }

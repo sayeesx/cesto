@@ -1,4 +1,5 @@
 import { Controller, Post, Body, UseGuards, Req, Delete, Param, Get } from '@nestjs/common';
+import { Request } from 'express';
 import { UploadsService } from './uploads.service';
 import { CloudinaryService } from './cloudinary.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
@@ -26,7 +27,7 @@ export class UploadsController {
   // R2 presigned URL (kept for backwards compat)
   @Post('presigned-url')
   getPresignedUrl(
-    @Req() req: any,
+    @Req() req: Request & { user: any },
     @Body('folder') folder: string = 'general',
     @Body('contentType') contentType: string = 'image/jpeg',
   ) {
@@ -34,7 +35,7 @@ export class UploadsController {
   }
 
   @Delete(':key')
-  deleteFile(@Req() req: any, @Param('key') key: string) {
+  deleteFile(@Req() req: Request & { user: any }, @Param('key') key: string) {
     return this.uploadsService.deleteFile(key, req.user.sub);
   }
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
+import { getFullImage, getThumbImage } from '@/lib/cloudinary';
 import {
   BsHeart, BsHeartFill, BsPlus, BsDash,
   BsLightningChargeFill, BsTruck, BsGift,
@@ -89,8 +90,14 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     description: 'A beautifully curated gift for any occasion.',
   };
 
-  const images: string[] = p.images?.map((i: any) => i.url).filter(Boolean)
+  // images[] holds public_ids (or legacy full URLs). Build display URLs per context.
+  const rawImages: string[] = p.images?.map((i: any) => i.url).filter(Boolean)
     || (p.imageUrl ? [p.imageUrl] : []);
+
+  // Full-size hero: 780×780 c_pad b_white
+  const heroImages = rawImages.map((id) => getFullImage(id) ?? id);
+  // Thumbnail strip: 104×104 c_pad b_white
+  const thumbImages = rawImages.map((id) => getThumbImage(id) ?? id);
 
   const discount = p.compareAtPrice && p.compareAtPrice > p.price
     ? Math.round(((p.compareAtPrice - p.price) / p.compareAtPrice) * 100)
@@ -150,11 +157,11 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
         {/* Main image — square */}
         <div style={{ aspectRatio: '1', width: '100%', overflow: 'hidden', position: 'relative' }}>
-          {images.length > 0 ? (
+          {heroImages.length > 0 ? (
             <img
-              src={images[imgIdx]}
+              src={heroImages[imgIdx]}
               alt={p.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity 0.2s' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#FAF3F6', transition: 'opacity 0.2s' }}
             />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 72, color: '#E0CBE8' }}>
@@ -162,16 +169,16 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             </div>
           )}
 
-          {images.length > 1 && (
+          {heroImages.length > 1 && (
             <>
-              <button onClick={() => setImgIdx(i => (i - 1 + images.length) % images.length)} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.88)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={() => setImgIdx(i => (i - 1 + heroImages.length) % heroImages.length)} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.88)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BsChevronLeft size={15} color="#111" />
               </button>
-              <button onClick={() => setImgIdx(i => (i + 1) % images.length)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.88)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={() => setImgIdx(i => (i + 1) % heroImages.length)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.88)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BsChevronRight size={15} color="#111" />
               </button>
               <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 5 }}>
-                {images.map((_, i) => (
+                {heroImages.map((_, i) => (
                   <button key={i} onClick={() => setImgIdx(i)} style={{ width: i === imgIdx ? 20 : 6, height: 6, borderRadius: 3, background: i === imgIdx ? BRAND : 'rgba(255,255,255,0.7)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.2s' }} />
                 ))}
               </div>
@@ -179,12 +186,12 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
           )}
         </div>
 
-        {/* Thumbnail strip */}
-        {images.length > 1 && (
+        {/* Thumbnail strip — 104×104 */}
+        {thumbImages.length > 1 && (
           <div style={{ display: 'flex', gap: 8, padding: '10px 16px', background: '#fff', overflowX: 'auto' }} className="no-scrollbar">
-            {images.map((img, i) => (
-              <button key={i} onClick={() => setImgIdx(i)} style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', flexShrink: 0, border: `2px solid ${i === imgIdx ? BRAND : '#F0EAEE'}`, cursor: 'pointer', padding: 0, background: 'none' }}>
-                <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {thumbImages.map((img, i) => (
+              <button key={i} onClick={() => setImgIdx(i)} style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', flexShrink: 0, border: `2px solid ${i === imgIdx ? BRAND : '#F0EAEE'}`, cursor: 'pointer', padding: 0, background: '#FAF3F6' }}>
+                <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </button>
             ))}
           </div>

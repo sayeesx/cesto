@@ -10,6 +10,7 @@ import {
 import RollingPrice from '@/components/ui/RollingPrice';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
+import { getCartImage } from '@/lib/cloudinary';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -232,7 +233,10 @@ export default function CartPage() {
   const isEmpty = cartItems.length === 0;
 
   function getItemImage(item: any): string | null {
-    return item.product?.imageUrl || item.product?.images?.[0]?.url || item.imageUrl || null;
+    // product.imageUrl holds the Cloudinary public_id (or a legacy full URL).
+    // getCartImage() applies the 164×164 c_pad b_white transformation.
+    const raw = item.product?.imageUrl || item.product?.images?.[0]?.url || item.imageUrl || null;
+    return getCartImage(raw);
   }
 
   // Show only 2 items unless expanded
@@ -362,7 +366,7 @@ export default function CartPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
                     {imgUrl ? (
-                      <img src={imgUrl} alt={item.product?.name || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={imgUrl} alt={item.product?.name || ''} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     ) : (
                       <BsGift size={28} color="#DCBECE" />
                     )}

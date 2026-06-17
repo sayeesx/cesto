@@ -5,6 +5,7 @@ import { BsPlus, BsSearch, BsPencil, BsTrash, BsChevronLeft, BsChevronRight } fr
 import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
 import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
+import { getAdminImage } from '@/lib/cloudinary';
 
 export default function AdminProductsPage() {
   useAdminGuard();
@@ -116,7 +117,7 @@ export default function AdminProductsPage() {
                       <td style={{ padding: '11px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ width: 40, height: 40, borderRadius: 8, background: '#F3F4F6', overflow: 'hidden', flexShrink: 0 }}>
-                            {p.imageUrl && <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                            {p.imageUrl && <img src={getAdminImage(p.imageUrl) ?? p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
                           </div>
                           <div>
                             <p style={{ fontSize: 13, fontWeight: 700, color: '#111', marginBottom: 2 }}>{p.name}</p>
@@ -157,7 +158,7 @@ export default function AdminProductsPage() {
                 <div key={p.id} style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', padding: 14 }}>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                     <div style={{ width: 52, height: 52, borderRadius: 10, background: '#F3F4F6', overflow: 'hidden', flexShrink: 0 }}>
-                      {p.imageUrl && <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      {p.imageUrl && <img src={getAdminImage(p.imageUrl) ?? p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 14, fontWeight: 800, color: '#111', marginBottom: 2 }}>{p.name}</p>

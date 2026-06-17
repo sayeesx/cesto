@@ -5,6 +5,7 @@ import { BsBox, BsCart, BsGraphUp, BsClockHistory, BsCheckCircle, BsTag } from '
 import { adminApiClient as apiClient } from '@/lib/api-client';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
 import Link from 'next/link';
+import { getAdminImage } from '@/lib/cloudinary';
 
 export default function AdminDashboard() {
   useAdminGuard();
@@ -114,7 +115,7 @@ export default function AdminDashboard() {
                 stats.lowStockProducts.map((prod: any) => (
                   <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: '1px solid #F9FAFB' }}>
                     <div style={{ width: 36, height: 36, borderRadius: 8, background: '#F3F4F6', overflow: 'hidden', flexShrink: 0 }}>
-                      {prod.imageUrl && <img src={prod.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
+                      {prod.imageUrl && <img src={getAdminImage(prod.imageUrl) ?? prod.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="" />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 12, fontWeight: 700, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prod.name}</p>

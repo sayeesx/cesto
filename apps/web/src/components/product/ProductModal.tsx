@@ -41,6 +41,7 @@ const messageOptions = [
 
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
+import { getCartImage } from '@/lib/cloudinary';
 
 export default function ProductModal({ product, onClose }: ProductModalProps) {
   const router = useRouter();
@@ -200,7 +201,7 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
               overflow: 'hidden', background: 'linear-gradient(135deg, #FBE0EB, #F8EDF4)',
             }}>
               {product.imageUrl ? (
-                <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={getCartImage(product.imageUrl) ?? product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, color: '#E0CBE8' }}>
                   <BsGift />

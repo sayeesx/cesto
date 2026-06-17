@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { BsPlus, BsGift } from 'react-icons/bs';
 import ProductModal, { ProductModalData } from './ProductModal';
+import { getCardImage } from '@/lib/cloudinary';
 
 interface ProductCardProps {
   id?: string;
@@ -79,6 +80,9 @@ export default function ProductCard(props: ProductCardProps) {
     : isNew ? 'NEW'
     : null;
 
+  // Build the 400×290 card image URL from publicId (or pass through a legacy full URL)
+  const cardImageSrc = getCardImage(imageUrl);
+
   const modalData: ProductModalData = {
     id: props.id || slug,
     name, slug, price, compareAtPrice,
@@ -115,9 +119,9 @@ export default function ProductCard(props: ProductCardProps) {
           flexShrink: 0,
           overflow: 'hidden',
         }}>
-          {imageUrl ? (
+          {cardImageSrc ? (
             <img
-              src={imageUrl}
+              src={cardImageSrc}
               alt={name}
               loading="lazy"
               style={{

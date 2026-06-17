@@ -1,7 +1,13 @@
 import { adminApiClient } from './api-client';
 
 export interface UploadResult {
+  /** Full Cloudinary secure_url — kept for reference but NOT stored in DB */
   url: string;
+  /**
+   * Cloudinary public_id — THIS is what gets stored in ProductImage.url.
+   * Example: "cesto/products/choco-jar-299"
+   * The app rebuilds sized URLs from this via getProductImage().
+   */
   publicId: string;
 }
 
@@ -72,18 +78,24 @@ export async function compressToWebP(
 
 /**
  * Upload a file to Cloudinary using signed params from our backend.
- * Automatically compresses and converts the image to WebP before upload.
- * Accepts jpg, png, webp, gif, avif — all converted to WebP for delivery.
+ * Accepts PNG, JPG, WebP — PNG is preserved as-is (PixelLab exports PNG).
+ * JPG/WebP are compressed client-side before upload.
  * Uses the admin session token — only works inside admin pages.
+ *
+ * Returns { url, publicId } — the publicId should be saved to the database,
+ * NOT the url. The app generates sized URLs via getProductImage(publicId, variant).
  */
 export async function uploadToCloudinary(
   file: File,
   folder = 'cesto/products',
   onProgress?: (pct: number) => void,
 ): Promise<UploadResult> {
-  // 1. Compress + convert to WebP client-side (skips animated gif)
+  // PNG files from PixelLab are kept as-is — don't compress them.
+  // Cloudinary's f_auto will serve WebP to modern browsers automatically.
+  // Other formats (jpg, webp) are compressed client-side.
+  const isPng = file.type === 'image/png';
   const isAnimated = file.type === 'image/gif';
-  const processedFile = isAnimated ? file : await compressToWebP(file);
+  const processedFile = (isPng || isAnimated) ? file : await compressToWebP(file);
 
   // 2. Get signed params — authenticated with admin token
   const params = await adminApiClient.getCloudinarySignature(folder);

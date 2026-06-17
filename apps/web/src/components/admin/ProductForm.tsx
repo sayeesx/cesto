@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { BsCloudUpload, BsX, BsPlus } from 'react-icons/bs';
 import { uploadToCloudinary } from '@/lib/cloudinary-upload';
+import { getAdminImage } from '@/lib/cloudinary';
 
 interface Category { id: string; name: string; slug: string; }
 interface Occasion { id: string; name: string; slug: string; }
@@ -96,7 +97,8 @@ export default function ProductForm({ initial, categories, occasions, onSubmit, 
       const results = await Promise.all(
         files.map(f => uploadToCloudinary(f, 'cesto/products', pct => setUploadProgress(pct)))
       );
-      set('imageUrls', [...form.imageUrls, ...results.map(r => r.url)]);
+      // Store only the publicId — the app generates sized URLs from it via getProductImage()
+      set('imageUrls', [...form.imageUrls, ...results.map(r => r.publicId)]);
     } catch (err: any) {
       setUploadError(err.message || 'Image upload failed');
     } finally {
@@ -221,13 +223,19 @@ export default function ProductForm({ initial, categories, occasions, onSubmit, 
 
       {/* Images */}
       <div style={cardStyle}>
-        <h3 style={{ fontSize: 14, fontWeight: 800, color: '#111', marginBottom: 20 }}>Images (Cloudinary)</h3>
+        <h3 style={{ fontSize: 14, fontWeight: 800, color: '#111', marginBottom: 8 }}>Image (Cloudinary)</h3>
+        <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 14, lineHeight: 1.5 }}>
+          Upload the 780×780 PNG exported from PixelLab. The app generates all display sizes automatically — you never need to export multiple sizes.
+        </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-          {form.imageUrls.map((url, i) => (
-            <div key={url} style={{ position: 'relative', width: 80, height: 80 }}>
-              <img src={url} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '2px solid ' + (i === 0 ? '#b22153' : '#E5E7EB') }} />
+          {form.imageUrls.map((publicIdOrUrl, i) => {
+            // Preview uses admin size (80×80). Falls back gracefully for legacy full URLs.
+            const previewSrc = getAdminImage(publicIdOrUrl) ?? publicIdOrUrl;
+            return (
+            <div key={publicIdOrUrl} style={{ position: 'relative', width: 80, height: 80 }}>
+              <img src={previewSrc} alt="" style={{ width: 80, height: 80, objectFit: 'contain', borderRadius: 8, border: '2px solid ' + (i === 0 ? '#b22153' : '#E5E7EB'), background: '#F9F4F6' }} />
               {i === 0 && <span style={{ position: 'absolute', bottom: 2, left: 2, fontSize: 8, fontWeight: 800, background: '#b22153', color: 'white', borderRadius: 4, padding: '1px 4px' }}>PRIMARY</span>}
-              <button type="button" onClick={() => removeImage(url)} style={{
+              <button type="button" onClick={() => removeImage(publicIdOrUrl)} style={{
                 position: 'absolute', top: -6, right: -6,
                 width: 20, height: 20, borderRadius: '50%', background: '#EF4444',
                 border: '2px solid white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -235,7 +243,8 @@ export default function ProductForm({ initial, categories, occasions, onSubmit, 
                 <BsX size={10} color="white" />
               </button>
             </div>
-          ))}
+            );
+          })}
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
@@ -255,11 +264,13 @@ export default function ProductForm({ initial, categories, occasions, onSubmit, 
             )}
           </button>
         </div>
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple style={{ display: 'none' }} onChange={handleFileChange} />
+        <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" multiple style={{ display: 'none' }} onChange={handleFileChange} />
         {uploadError && (
           <p style={{ fontSize: 12, color: '#DC2626', fontWeight: 600, marginTop: 8 }}>⚠ {uploadError}</p>
         )}
-        <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: uploadError ? 4 : 0 }}>JPG, PNG or WebP — auto-compressed &amp; converted to WebP. First image is the primary thumbnail.</p>
+        <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: uploadError ? 4 : 0 }}>
+          PNG (preferred — from PixelLab 780×780), JPG or WebP. All sizes generated automatically by Cloudinary.
+        </p>
       </div>
 
       {/* Sections: Categories */}

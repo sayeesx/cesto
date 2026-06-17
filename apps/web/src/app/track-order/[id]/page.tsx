@@ -6,6 +6,7 @@ import { BsArrowLeft, BsCheckCircleFill, BsBoxSeam, BsTruck, BsHouseCheck, BsHea
 import { apiClient } from '@/lib/api-client';
 import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 import Link from 'next/link';
+import { getThumbImage } from '@/lib/cloudinary';
 
 const ORDER_STATUS_STEPS = [
   { status: 'PLACED', label: 'Placed', icon: <BsCheckCircleFill /> },
@@ -124,7 +125,11 @@ export default function OrderTrackingPage() {
               {order.items.map((item: any) => (
                 <div key={item.id} className="flex gap-4">
                   <div className="w-16 h-16 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
-                    <img src={item.product?.imageUrl || '/placeholder.png'} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={getThumbImage(item.product?.imageUrl) ?? '/placeholder.png'}
+                      alt=""
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900 truncate">{item.product?.name}</p>

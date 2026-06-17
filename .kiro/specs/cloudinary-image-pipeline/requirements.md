@@ -43,24 +43,25 @@ This document defines the requirements for the Cloudinary Image Pipeline feature
 
 #### Acceptance Criteria
 
-1. THE Image_Helper SHALL construct a Transformation_URL for the product card size (400 × 290 px) using the transformation parameters `f_auto,q_auto,w_400,h_290,c_pad,b_white`.
-2. THE Image_Helper SHALL construct a Transformation_URL for the cart size (164 × 164 px) using the transformation parameters `f_auto,q_auto,w_164,h_164,c_pad,b_white`.
-3. THE Image_Helper SHALL construct a Transformation_URL for the thumbnail size (104 × 104 px) using the transformation parameters `f_auto,q_auto,w_104,h_104,c_pad,b_white`.
-4. THE Image_Helper SHALL construct a Transformation_URL for the admin panel size (80 × 80 px) using the transformation parameters `f_auto,q_auto,w_80,h_80,c_pad,b_white`.
-5. WHEN constructing a Transformation_URL, THE Image_Helper SHALL embed the transformation parameters in the URL path before the Public_ID, conforming to the Cloudinary URL structure.
-6. IF a Public_ID is null or an empty string, THEN THE Image_Helper SHALL return null and SHALL NOT construct a partial URL.
+1. THE Image_Helper SHALL construct a Transformation_URL for the product card size (400 × 290 px) using the transformation parameters `f_auto,q_auto,w_400,h_290,c_thumb,g_auto`.
+2. THE Image_Helper SHALL construct a Transformation_URL for the cart size (164 × 164 px) using the transformation parameters `f_auto,q_auto,w_164,h_164,c_thumb,g_auto`.
+3. THE Image_Helper SHALL construct a Transformation_URL for the thumbnail size (104 × 104 px) using the transformation parameters `f_auto,q_auto,w_104,h_104,c_thumb,g_auto`.
+4. THE Image_Helper SHALL construct a Transformation_URL for the admin panel size (80 × 80 px) using the transformation parameters `f_auto,q_auto,w_80,h_80,c_thumb,g_auto`.
+5. THE Image_Helper SHALL construct a Transformation_URL for the full hero size (780 × 780 px) using the transformation parameters `f_auto,q_auto,w_780,h_780,c_pad,b_white` to preserve the complete product.
+6. WHEN constructing a Transformation_URL, THE Image_Helper SHALL embed the transformation parameters in the URL path before the Public_ID, conforming to the Cloudinary URL structure.
+7. IF a Public_ID is null or an empty string, THEN THE Image_Helper SHALL return null and SHALL NOT construct a partial URL.
 
 ---
 
 ### Requirement 3: Product Card Image Display
 
-**User Story:** As a shopper, I want product images in listing grids to be fully visible without cropping, so that I can clearly see the entire product before clicking.
+**User Story:** As a shopper, I want product images in listing grids to be fully visible and fill the card space, so that I can clearly see the entire product in a prominent, visually appealing way.
 
 #### Acceptance Criteria
 
 1. WHEN rendering a Product_Card, THE Product_Card SHALL display the product image using the 400 × 290 px Transformation_URL produced by the Image_Helper.
-2. THE Product_Card SHALL apply `c_pad` (pad crop mode) so the full product is visible without any part being cropped.
-3. THE Product_Card SHALL use a white background fill (`b_white`) for any padding areas introduced by the pad crop mode.
+2. THE Product_Card SHALL apply `c_thumb` (smart crop) so the product intelligently fills the card space, removing excess white padding.
+3. THE Product_Card SHALL use `g_auto` (auto-focus) so Cloudinary focuses on the main product, not the padding.
 4. THE Product_Card SHALL request the `f_auto` format so Cloudinary serves WebP to supported browsers and PNG as a fallback.
 5. THE Product_Card SHALL request `q_auto` quality so Cloudinary applies automatic quality optimisation.
 
@@ -68,12 +69,12 @@ This document defines the requirements for the Cloudinary Image Pipeline feature
 
 ### Requirement 4: Cart Item Image Display
 
-**User Story:** As a shopper, I want to see a clear product image next to each item in my cart, so that I can confirm I have the correct products before checkout.
+**User Story:** As a shopper, I want to see a clear, prominent product image next to each item in my cart, so that I can confirm I have the correct products before checkout.
 
 #### Acceptance Criteria
 
 1. WHEN rendering a cart line item, THE Cart SHALL display the product image using the 164 × 164 px Transformation_URL produced by the Image_Helper.
-2. THE Cart SHALL apply `c_pad` and `b_white` so the full product is visible at the cart thumbnail size.
+2. THE Cart SHALL apply `c_thumb` and `g_auto` so the product intelligently fills the cart thumbnail space.
 
 ---
 
@@ -84,18 +85,18 @@ This document defines the requirements for the Cloudinary Image Pipeline feature
 #### Acceptance Criteria
 
 1. WHEN rendering the thumbnail strip on the product detail page, THE Thumbnail SHALL display each product image using the 104 × 104 px Transformation_URL produced by the Image_Helper.
-2. THE Thumbnail SHALL apply `c_pad` and `b_white` so the full product is visible at the thumbnail size.
+2. THE Thumbnail SHALL apply `c_thumb` and `g_auto` so the product intelligently fills the thumbnail space.
 
 ---
 
 ### Requirement 6: Admin Panel Product Image Display
 
-**User Story:** As an admin, I want to see small product images in the product list table, so that I can quickly identify products while managing inventory.
+**User Story:** As an admin, I want to see clear, prominent product images in the product list table, so that I can quickly identify products while managing inventory.
 
 #### Acceptance Criteria
 
 1. WHEN rendering a row in the Admin_Panel product list table, THE Admin_Panel SHALL display the product image using the 80 × 80 px Transformation_URL produced by the Image_Helper.
-2. THE Admin_Panel SHALL apply `c_pad` and `b_white` so the full product is visible at the admin thumbnail size.
+2. THE Admin_Panel SHALL apply `c_thumb` and `g_auto` so the product intelligently fills the admin thumbnail space.
 3. IF a product has no Public_ID stored, THEN THE Admin_Panel SHALL display a placeholder element in place of the product image.
 
 ---

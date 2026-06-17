@@ -19,11 +19,11 @@ The image helper module (`apps/web/src/lib/cloudinary.ts`) must construct valid 
 
 1. Verify `getProductImage()` returns `null` when given `null`, `undefined`, or empty string.
 2. Verify `getProductImage()` returns the URL unchanged when given a full `https://` URL (backward compat).
-3. Verify `getCardImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_400,h_290,c_pad,b_white`.
-4. Verify `getCartImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_164,h_164,c_pad,b_white`.
-5. Verify `getThumbImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_104,h_104,c_pad,b_white`.
-6. Verify `getAdminImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_80,h_80,c_pad,b_white`.
-7. Verify `getFullImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_780,h_780,c_pad,b_white`.
+3. Verify `getCardImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_400,h_290,c_thumb,g_auto`.
+4. Verify `getCartImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_164,h_164,c_thumb,g_auto`.
+5. Verify `getThumbImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_104,h_104,c_thumb,g_auto`.
+6. Verify `getAdminImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_80,h_80,c_thumb,g_auto`.
+7. Verify `getFullImage(publicId)` builds URL with correct transformation: `f_auto,q_auto,w_780,h_780,c_pad,b_white` (pad mode for hero to preserve full product).
 8. Verify URL structure matches Cloudinary format: `https://res.cloudinary.com/{CLOUD_NAME}/image/upload/{transformations}/{public_id}`.
 9. Verify same `public_id` and variant always produce the same URL (deterministic).
 10. Verify cloud name is read from `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` env var (currently `draedbypr`).
@@ -101,9 +101,10 @@ ProductCard component must import `getCardImage()` helper and render the 400×29
 
 1. Verify ProductCard imports `getCardImage` from cloudinary.ts.
 2. Verify ProductCard passes product image public_id to `getCardImage()`.
-3. Verify rendered `<img>` element has `src` pointing to Cloudinary URL with `f_auto,q_auto,w_400,h_290,c_pad,b_white` transformation.
-4. Verify image is responsive and displays at intended size in grid context.
+3. Verify rendered `<img>` element has `src` pointing to Cloudinary URL with `f_auto,q_auto,w_400,h_290,c_thumb,g_auto` transformation.
+4. Verify image is responsive and displays at intended size in grid context, filling the card space.
 5. Verify fallback image is shown if public_id is null.
+6. Verify `objectFit: 'cover'` is applied so the image fills the card without padding.
 
 **Expected Outcome:** ProductCard renders 400×290 images with correct transformation.
 
@@ -330,11 +331,12 @@ Execute a manual end-to-end test where an admin uploads a test product image and
 
 **Acceptance Criteria:**
 - ✓ Admin can upload image and save product.
-- ✓ Product displays on storefront with 400×290 image (no cropping).
-- ✓ Cart displays 164×164 image.
-- ✓ Product detail displays 780×780 hero and 104×104 thumbnails.
+- ✓ Product displays on storefront with 400×290 image (product fills card, no excessive padding).
+- ✓ Cart displays 164×164 image (product fills cart thumbnail).
+- ✓ Product detail displays 780×780 hero (full product visible with breathing room) and 104×104 thumbnails (product fills thumbnail).
 - ✓ All images are from Cloudinary (verified in browser DevTools Network tab).
-- ✓ All transformations are present in URLs: `f_auto,q_auto,w_*,h_*,c_pad,b_white`.
+- ✓ Card, cart, and admin images use `c_thumb,g_auto` for smart cropping.
+- ✓ Hero image uses `c_pad,b_white` to preserve full product visibility.
 
 ---
 

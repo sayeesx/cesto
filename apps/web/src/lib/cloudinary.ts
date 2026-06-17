@@ -18,21 +18,24 @@ export type ImageVariant = 'card' | 'cart' | 'thumb' | 'admin' | 'full';
 /**
  * Cloudinary transformation strings for each UI context.
  *
- * All use c_pad + b_white so the full product is always visible
- * without cropping, with white padding on any empty space.
+ * Transformation strategy:
+ * - card, cart, thumb, admin: use c_thumb (smart crop) to zoom into the product,
+ *   removing excess white background padding so product fills the card/space
+ * - full: use c_pad,b_white to preserve full product visibility at hero size
+ *
  * f_auto delivers WebP to modern browsers, PNG as fallback.
  * q_auto lets Cloudinary pick the best quality for file size.
  */
 const TRANSFORMS: Record<ImageVariant, string> = {
-  /** Product card grid — 400 × 290 */
-  card:  'f_auto,q_auto,w_400,h_290,c_pad,b_white',
-  /** Cart / checkout line item — 164 × 164 */
-  cart:  'f_auto,q_auto,w_164,h_164,c_pad,b_white',
-  /** Product detail thumbnail strip — 104 × 104 */
-  thumb: 'f_auto,q_auto,w_104,h_104,c_pad,b_white',
-  /** Admin panel product list — 80 × 80 */
-  admin: 'f_auto,q_auto,w_80,h_80,c_pad,b_white',
-  /** Full-size product detail hero — 780 × 780 (original, just format/quality) */
+  /** Product card grid — 400 × 290, zoomed to fill (removes padding) */
+  card:  'f_auto,q_auto,w_400,h_290,c_thumb,g_auto',
+  /** Cart / checkout line item — 164 × 164, zoomed to fill */
+  cart:  'f_auto,q_auto,w_164,h_164,c_thumb,g_auto',
+  /** Product detail thumbnail strip — 104 × 104, zoomed to fill */
+  thumb: 'f_auto,q_auto,w_104,h_104,c_thumb,g_auto',
+  /** Admin panel product list — 80 × 80, zoomed to fill */
+  admin: 'f_auto,q_auto,w_80,h_80,c_thumb,g_auto',
+  /** Full-size product detail hero — 780 × 780, keep full product visible */
   full:  'f_auto,q_auto,w_780,h_780,c_pad,b_white',
 };
 

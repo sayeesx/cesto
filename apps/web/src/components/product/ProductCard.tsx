@@ -127,9 +127,7 @@ export default function ProductCard(props: ProductCardProps) {
               style={{
                 position: 'absolute', inset: 0,
                 width: '100%', height: '100%',
-                objectFit: 'contain',
-                padding: '8%',
-                boxSizing: 'border-box',
+                objectFit: 'cover',
               }}
             />
           ) : (

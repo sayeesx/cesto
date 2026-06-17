@@ -45,7 +45,8 @@ End User (sees correctly-sized, optimized image)
 - `getFullImage(id)` — Convenience shorthand for 780×780 hero image (original size).
 
 **Transformation Strategy:**
-- All variants use `c_pad,b_white` to keep products fully visible without cropping.
+- All display variants (card, cart, thumb, admin) use `c_thumb` (smart crop) with `g_auto` (auto-focus) to zoom into the product and remove excess white background padding, making the product fill the entire card/space.
+- Full hero image uses `c_pad,b_white` to preserve the full product at original size with padding.
 - `f_auto` ensures Cloudinary serves WebP to modern browsers, PNG as fallback.
 - `q_auto` allows Cloudinary to optimize file size per context.
 
@@ -168,14 +169,15 @@ These are used by `adminApiClient.getCloudinarySignature()` to generate signed u
 - **Format Consistency:** Cloudinary's `f_auto` serves WebP to modern browsers, so pre-compression aligns with final delivery format.
 - **Transparency Support:** WebP supports transparency; PNG is preserved as-is for cases where alpha channel matters.
 
-### 3. Why Use `c_pad,b_white` Over Cropping?
+### 3. Why Use `c_thumb` (Smart Crop) Instead of `c_pad`?
 
-**Decision:** All transformations use pad-crop mode with white background, not center-crop.
+**Decision:** Display variants (card, cart, thumb, admin) use `c_thumb,g_auto` to zoom and crop intelligently. Only full hero uses `c_pad,b_white`.
 
 **Rationale:**
-- **Product Visibility:** Keeps the entire product visible at any size, never cuts off details.
-- **Consistency:** Admin designs products centrally in PixelLab with breathing room; padding preserves that intent.
-- **User Clarity:** Shoppers see complete products without wondering what was cropped off.
+- **Product Fills Space:** Since PixelLab images have white padding around them, `c_pad` makes products appear small. `c_thumb` intelligently crops into the product, removing padding so the product fills the card.
+- **Smart Cropping:** `g_auto` (auto-focus) uses Cloudinary's AI to focus on the main product, not arbitrary padding.
+- **Better UX:** Products appear larger and more prominent in cards, improving visual appeal.
+- **Hero Preserves Full Product:** At 780×780 full size, using `c_pad,b_white` ensures the entire product with breathing room is always visible for detail viewing.
 
 ### 4. Why Build URLs Client-Side, Not Server-Side?
 
